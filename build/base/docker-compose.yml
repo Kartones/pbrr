@@ -1,0 +1,12 @@
+version: "2"
+services:
+  pbrr-base:
+    build:
+      args:
+        uid: ${UID}
+        gid: ${GID}
+      context: ../..
+      dockerfile: build/base/Dockerfile
+    image: pbrr:base
+    working_dir: /code
+    command: "/bin/true"
