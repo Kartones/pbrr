@@ -12,4 +12,4 @@ services:
       - ../..:/code
       - ../..:/opt/pbrr
       - ~/.bash_history.pbrr:/home/pbrr/.bash_history
-    command: "bash -c 'exec python3 run.py'"
+    command: "bash -c 'exec python3 run.py feeds subscriptions.xml'"

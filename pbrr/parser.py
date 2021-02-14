@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import feedparser
 from bs4 import BeautifulSoup
 
+from pbrr.log import Log
 from pbrr.parsed_feed_item import ParsedFeedItem
 from pbrr.parsed_feed_site import ParsedFeedSite
 
@@ -26,7 +27,7 @@ class Parser:
             return element.name == "outline" and element.has_attr("xmlUrl")
 
         if not os.path.exists(opml_filepath):
-            raise ValueError("OPML file '{}' not found".format(opml_filepath))
+            Log.error_and_exit("OPML file '{}' not found".format(opml_filepath))
 
         with open(opml_filepath, encoding="utf-8") as opml_file_handle:
             xml_contents = opml_file_handle.read()
@@ -42,17 +43,18 @@ class Parser:
         except Exception as e:
             # else need to directly catch urllib errors
             if "Name or service not known" in str(e):
-                print("{title} ({url}) skipped, error fetching url".format(title=title, url=url))
-                raise ValueError("Error fetching url {url}, skipping".format(url=url))
+                Log.warn_and_raise_error("{title} ({url}) skipped, error fetching url".format(title=title, url=url))
             else:
+                Log.warn("{title} ({url}) skipped. Error: {error}".format(title=title, url=url, error=e))
                 raise e
 
         # not worth of skipping
         if "bozo" in source_site.keys() and source_site["bozo"] == 1 and source_site.status != 200:
-            print("{title} ({url}) bozo=1 http_status:{status}".format(title=title, url=url, status=source_site.status))
-        # 301s
+            Log.info(
+                "{title} ({url}) bozo=1 http_status:{status}".format(title=title, url=url, status=source_site.status)
+            )
         if source_site.status in [301]:
-            print(
+            Log.warn(
                 "{title} ({url}) has moved ({status}) Check new URL".format(
                     title=title, url=url, status=source_site.status
                 )
@@ -60,15 +62,15 @@ class Parser:
 
         # should always skip
         if not source_site.feed.keys() or "link" not in source_site.feed.keys():
-            print("{title} ({url}) skipped, feed malformed or not retrieved".format(title=title, url=url))
-            raise ValueError("Feed malforned or not correctly retrieved, skipping")
+            Log.warn_and_raise_error(
+                "{title} ({url}) skipped, feed malformed or not retrieved".format(title=title, url=url)
+            )
         if source_site.status in [410]:
-            print(
+            Log.warn_and_raise_error(
                 "{title} ({url}) skipped, received http_status:{status} Check new URL".format(
                     title=title, url=url, status=source_site.status
                 )
             )
-            raise ValueError("Feed redirected, skipping")
 
         parsed_site = cls._parse_site(feed=source_site.feed, provided_title=title)
 
@@ -76,7 +78,7 @@ class Parser:
         for entry in source_site.entries:
             parsed_entries.append(cls._parse_entry(entry=entry, parsed_site=parsed_site))
 
-        print("> Fetched: {title}".format(title=title))
+        Log.info("> Fetched: {title}".format(title=title))
 
         return {cls.KEY_SITE: parsed_site, cls.KEY_ENTRIES: parsed_entries}
 

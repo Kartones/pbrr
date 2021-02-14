@@ -55,9 +55,6 @@ For the time being, no intention of adding tests to the project.
 
 ## TODOs
 
-- command line args for xml and data folder
-- move to constants `pbrr`, `templates` folders etc.
-- add colors to terminal and homogenize format of errors, etc.
 - extract categories from opml, tag each site with them (maybe good for next point of settings file), css accordion to expand-contract each category
 - Need to store a json file with at least basic settings: key sitename, value dict with time of last fetch (for headers)
 - probably also interesting to put into settings file opml xml filename and reduce path dependencies to just data path

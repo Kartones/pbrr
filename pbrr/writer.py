@@ -6,6 +6,15 @@ from typing import List, Optional, Tuple
 from pbrr.parsed_feed_item import ParsedFeedItem
 from pbrr.parsed_feed_site import ParsedFeedSite
 
+MAIN_TEMPLATE = "index"
+MAIN_SITES_LIST_ITEM_TEMPLATE = "sites_list_item"
+ENTRIES_LIST_TEMPLATE = "entries_list"
+ENTRIES_LIST_ITEM_TEMPLATE = "entries_list_item"
+ENTRY_TEMPLATE = "entry"
+
+BASE_FOLDER = "pbrr"
+TEMPLATES_FOLDER = "templates"
+
 
 class Writer:
     def __init__(self, base_output_path: str) -> None:
@@ -45,7 +54,7 @@ class Writer:
             entry_filename = os.path.join(self._site_path(site), entry.html_filename)
             with open(entry_filename, "w") as entry_file_handle:
                 entry_file_handle.write(
-                    self._load_template("entry").format(
+                    self._load_template(ENTRY_TEMPLATE).format(
                         title=entry.title,
                         link=entry.link,
                         back_link="{folder}/index.html".format(folder=site.title_for_filename),
@@ -57,7 +66,7 @@ class Writer:
     def _save_entries_list(self, entries: List[ParsedFeedItem], site: ParsedFeedSite) -> None:
         entries_markup = "\n".join(
             [
-                self._load_template("entries_list_item").format(
+                self._load_template(ENTRIES_LIST_ITEM_TEMPLATE).format(
                     relative_path="{folder}/{file}".format(folder=site.title_for_filename, file=entry.html_filename),
                     title=entry.title,
                     published=self._stringified_date(entry.published),
@@ -67,7 +76,7 @@ class Writer:
         )
 
         with open(os.path.join(self._site_path(site), "index.html"), "w") as entries_list_file_handle:
-            entries_list_file_handle.write(self._load_template("entries_list").format(entries=entries_markup))
+            entries_list_file_handle.write(self._load_template(ENTRIES_LIST_TEMPLATE).format(entries=entries_markup))
 
     def _sort_sites_list_by_last_updated(self, sites: List[ParsedFeedSite]) -> List[ParsedFeedSite]:
         return sorted(sites, key=lambda s: time.mktime(s.last_updated) if s.last_updated else 0, reverse=True)
@@ -75,7 +84,7 @@ class Writer:
     def _save_sites_list(self, sites: List[ParsedFeedSite]) -> None:
         sites_markup = "\n".join(
             [
-                self._load_template("sites_list_item").format(
+                self._load_template(MAIN_SITES_LIST_ITEM_TEMPLATE).format(
                     relative_path="{folder}/index.html".format(folder=site.title_for_filename),
                     title=site.title,
                     last_update=self._stringified_date(site.last_updated),
@@ -85,7 +94,7 @@ class Writer:
         )
 
         with open(os.path.join(self.base_output_path, "index.html"), "w") as sites_list_file_handle:
-            sites_list_file_handle.write(self._load_template("index").format(sites=sites_markup))
+            sites_list_file_handle.write(self._load_template(MAIN_TEMPLATE).format(sites=sites_markup))
 
     def _ensure_base_path(self) -> None:
         if not os.path.exists(self.base_output_path):
@@ -110,7 +119,9 @@ class Writer:
 
     @staticmethod
     def _load_template(template_name: str) -> str:
-        with open(os.path.join("pbrr", "templates", "{name}.html".format(name=template_name))) as template_file_handle:
+        with open(
+            os.path.join(BASE_FOLDER, TEMPLATES_FOLDER, "{name}.html".format(name=template_name))
+        ) as template_file_handle:
             return template_file_handle.read()
 
     # Note that it won't check individual file presence, nor differences in content. If they get updated, just delete
@@ -119,4 +130,4 @@ class Writer:
         for folder in ["css", "fonts", "js"]:
             path = os.path.join(self.base_output_path, folder)
             if not os.path.exists(path):
-                copy_tree(os.path.join("pbrr", "templates", folder), path)
+                copy_tree(os.path.join(BASE_FOLDER, TEMPLATES_FOLDER, folder), path)
