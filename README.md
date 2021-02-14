@@ -36,6 +36,12 @@ make shell
 python3 run.py
 ```
 
+Uses:
+- [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/), because makes parsing HTML and XML way more pleasant
+- [Bootstrap 3](https://getbootstrap.com/docs/3.4/), because my CSS skills equal to `null`
+- [feedparser](https://feedparser.readthedocs.io) for easier handling of feeds, and yet, they keep causing headaches
+- [Unpoly](https://unpoly.com/) for AJAX, because you don't always need React
+
 ## Testing
 
 *Here be dragons*
@@ -44,8 +50,8 @@ For the time being, no intention of adding tests to the project.
 
 ## TODOs
 
-- move templates to html files under `templates/`
-- add bootstrap and some minimalistic css.
+- command line args for xml and data folder
+- move to constants `pbrr`, `templates` folders etc.
 - add colors to terminal and homogenize format of errors, etc.
 - extract categories from opml, tag each site with them (maybe good for next point of settings file), css accordion to expand-contract each category
 - Need to store a json file with at least basic settings: key sitename, value dict with time of last fetch (for headers)

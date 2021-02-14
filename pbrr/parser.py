@@ -9,7 +9,6 @@ from pbrr.parsed_feed_item import ParsedFeedItem
 from pbrr.parsed_feed_site import ParsedFeedSite
 
 
-# https://feedparser.readthedocs.io
 # TODO: pretty aggressive skipping encoding errors, make more flexible once everything working
 class Parser:
 
@@ -36,11 +35,10 @@ class Parser:
 
         return [(site["xmlUrl"], site.get("title")) for site in sites]
 
-    # TODO: ddos-guard can reject with a 403, research how to make it work
     @classmethod
     def parse(cls, url: str, title: Optional[str]) -> Dict[str, Union[ParsedFeedSite, List[ParsedFeedItem]]]:
         try:
-            source_site = feedparser.parse(url, agent="pbrr/0.1")
+            source_site = feedparser.parse(url, agent="pbrr/0.2 (https://github.com/Kartones/pbrr)")
         except Exception as e:
             # else need to directly catch urllib errors
             if "Name or service not known" in str(e):
