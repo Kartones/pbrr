@@ -6,6 +6,11 @@ Building a simple RSS reader that fetches feeds from an OPML file and generates 
 
 No complex website intentions, just cron-based runs dumping new entries, not even deleting old ones (list will anyway only reflect latest N items). Keep minimum state.
 
+
+**Note**: Totally WIP. It already works but probably not yet production-ready. Here's how it looks:
+
+![PBRR screenshot](doc/screenshot.png)
+
 ## Setup
 
 Just need Docker, but to setup without containers:
