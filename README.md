@@ -60,8 +60,6 @@ For the time being, no intention of adding tests to the project.
 - probably also interesting to put into settings file opml xml filename and reduce path dependencies to just data path
 - Proper headers like modified-after, etc.
 - Check which site field to use for `Site.last_updated`, some sites lie, others don't have it.
-- Seen a few feeds that output the xml as a file, see if can handle easily via feedparser
-- Seen a feed that throws 403 because of `ddos-guard`
 - run mypy on pre-commit if possible
 
 ## License

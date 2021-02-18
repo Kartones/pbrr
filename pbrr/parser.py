@@ -45,14 +45,41 @@ class Parser:
             if "Name or service not known" in str(e):
                 Log.warn_and_raise_error("{title} ({url}) skipped, error fetching url".format(title=title, url=url))
             else:
-                Log.warn("{title} ({url}) skipped. Error: {error}".format(title=title, url=url, error=e))
+                Log.warn(
+                    "{title} ({url}) skipped. Error: {error} Headers: {headers}".format(
+                        title=title,
+                        url=url,
+                        error=e,
+                        headers=",".join(
+                            ["{}={}".format(key, source_site.headers[key]) for key in source_site.headers.keys()]
+                        ),
+                    )
+                )
                 raise e
 
-        # not worth of skipping
+        # just warn, don't skip
         if "bozo" in source_site.keys() and source_site["bozo"] == 1 and source_site.status != 200:
             Log.info(
                 "{title} ({url}) bozo=1 http_status:{status}".format(title=title, url=url, status=source_site.status)
             )
+
+        # should always skip
+        if (
+            not source_site.feed.keys()
+            or "link" not in source_site.feed.keys()
+            or source_site.status in [401, 403, 404]
+        ):
+            Log.warn_and_raise_error(
+                "{title} ({url}) skipped, feed malformed or not retrieved. HTTP Status: {status} Headers: {headers}".format(
+                    title=title,
+                    url=url,
+                    status=source_site.status,
+                    headers=",".join(
+                        ["{}={}".format(key, source_site.headers[key]) for key in source_site.headers.keys()]
+                    ),
+                )
+            )
+
         if source_site.status in [301]:
             Log.warn(
                 "{title} ({url}) has moved ({status}) Check new URL".format(
@@ -60,14 +87,9 @@ class Parser:
                 )
             )
 
-        # should always skip
-        if not source_site.feed.keys() or "link" not in source_site.feed.keys():
-            Log.warn_and_raise_error(
-                "{title} ({url}) skipped, feed malformed or not retrieved".format(title=title, url=url)
-            )
         if source_site.status in [410]:
             Log.warn_and_raise_error(
-                "{title} ({url}) skipped, received http_status:{status} Check new URL".format(
+                "{title} ({url}) skipped, received http_status:{status} Url gone".format(
                     title=title, url=url, status=source_site.status
                 )
             )
