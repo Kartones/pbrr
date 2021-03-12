@@ -18,8 +18,6 @@ Just need Docker, but to setup without containers:
 pip3 install -r /code/requirements.txt
 ```
 
-For now, hardcoded to search for `subscriptions.xml` OPML file under a `feeds/` folder relative to execution path.
-
 ## Running
 
 From the outside:
@@ -29,16 +27,18 @@ make run
 
 Without Docker:
 ```
-python3 run.py
+python3 run.py feeds subscriptions.xml
 ```
 
 Root `index.html` with lists of sites will be placed at `feeds/index.html` once finished fetching.
+
+Also, a `settings.json` file will be generated. Inside it, you can add urls to the skip urls setting (e.g. if a feed is not working with PBRR). It's a list of strings, you can manually add new entries, for example `"https://site-to-skip.test"`.
 
 ## Development
 
 ```
 make shell
-python3 run.py
+python3 run.py feeds subscriptions.xml
 ```
 
 Uses:
@@ -56,9 +56,6 @@ For the time being, no intention of adding tests to the project.
 ## TODOs
 
 - extract categories from opml, tag each site with them (maybe good for next point of settings file), css accordion to expand-contract each category
-- Need to store a json file with at least basic settings: key sitename, value dict with time of last fetch (for headers)
-- probably also interesting to put into settings file opml xml filename and reduce path dependencies to just data path
-- Proper headers like modified-after, etc.
 - Check which site field to use for `Site.last_updated`, some sites lie, others don't have it.
 - run mypy on pre-commit if possible
 

@@ -8,23 +8,29 @@ from bs4 import BeautifulSoup
 from pbrr.log import Log
 from pbrr.parsed_feed_item import ParsedFeedItem
 from pbrr.parsed_feed_site import ParsedFeedSite
+from pbrr.settings import Settings
 
 
-# TODO: pretty aggressive skipping encoding errors, make more flexible once everything working
 class Parser:
 
     KEY_SITE = "site"
     KEY_ENTRIES = "entries"
 
-    def __init__(self, base_input_path: str) -> None:
-        self.base_input_path = base_input_path
+    def __init__(self, settings: Settings) -> None:
+        self.settings = settings
 
     def fetch_sites_metadata(self, opml_filename: str) -> List[Tuple[str, Optional[str]]]:
-        opml_filepath = os.path.join(self.base_input_path, opml_filename)
+        opml_filepath = os.path.join(self.settings.base_output_path, opml_filename)
 
-        # TODO: worth checking that type="rss"?
         def site_outline(element: Any) -> bool:
-            return element.name == "outline" and element.has_attr("xmlUrl")
+            return all(
+                [
+                    element.name == "outline",
+                    element.has_attr("xmlUrl"),
+                    element.has_attr("type"),
+                    element.get("type", "") == "rss",
+                ]
+            )
 
         if not os.path.exists(opml_filepath):
             Log.error_and_exit("OPML file '{}' not found".format(opml_filepath))
@@ -34,12 +40,17 @@ class Parser:
         soup = BeautifulSoup(xml_contents, "xml")
         sites = soup.opml.body.findAll(site_outline)
 
-        return [(site["xmlUrl"], site.get("title")) for site in sites]
+        return [
+            (site["xmlUrl"], site.get("title"))
+            for site in sites
+            if not any([True for skip_url in self.settings.skip_urls if site["xmlUrl"].startswith(skip_url)])
+        ]
 
-    @classmethod
-    def parse(cls, url: str, title: Optional[str]) -> Dict[str, Union[ParsedFeedSite, List[ParsedFeedItem]]]:
+    def fetch(self, url: str, title: Optional[str]) -> Dict[str, Union[ParsedFeedSite, List[ParsedFeedItem]]]:
         try:
-            source_site = feedparser.parse(url, agent="pbrr/0.2 (https://github.com/Kartones/pbrr)")
+            source_site = feedparser.parse(
+                url, agent="pbrr/0.2 (https://github.com/Kartones/pbrr)", modified=self.settings.last_fetch_mark
+            )
         except Exception as e:
             # else need to directly catch urllib errors
             if "Name or service not known" in str(e):
@@ -62,6 +73,13 @@ class Parser:
             Log.info(
                 "{title} ({url}) bozo=1 http_status:{status}".format(title=title, url=url, status=source_site.status)
             )
+
+        # TODO: extract to method
+        if source_site.status == 304:
+            return {
+                self.KEY_SITE: self._parse_site(feed=None, provided_title=title),
+                self.KEY_ENTRIES: [],
+            }
 
         # should always skip
         if (
@@ -94,18 +112,25 @@ class Parser:
                 )
             )
 
-        parsed_site = cls._parse_site(feed=source_site.feed, provided_title=title)
+        parsed_site = self._parse_site(feed=source_site.feed, provided_title=title)
 
         parsed_entries = []  # type: List[ParsedFeedItem]
         for entry in source_site.entries:
-            parsed_entries.append(cls._parse_entry(entry=entry, parsed_site=parsed_site))
+            parsed_entries.append(self._parse_entry(entry=entry, parsed_site=parsed_site))
 
         Log.info("> Fetched: {title}".format(title=title))
 
-        return {cls.KEY_SITE: parsed_site, cls.KEY_ENTRIES: parsed_entries}
+        return {self.KEY_SITE: parsed_site, self.KEY_ENTRIES: parsed_entries}
 
     @classmethod
-    def _parse_site(cls, feed: Any, provided_title: Optional[str]) -> ParsedFeedSite:
+    def _parse_site(cls, feed: Optional[Any], provided_title: Optional[str]) -> ParsedFeedSite:
+        if not feed:
+            return ParsedFeedSite(
+                title=cls._sanitize_site_title(feed=None, provided_title=provided_title),
+                link=None,
+                last_updated=None,
+            )
+
         # Seen feeds without any date at all
         if "updated" in feed.keys():
             last_updated = feed.updated_parsed if "updated_parsed" in feed.keys() else feed.updated
@@ -160,7 +185,7 @@ class Parser:
     def _sanitize_site_title(feed: Any, provided_title: Optional[str]) -> str:
         if provided_title:
             return provided_title
-        elif "title" not in feed.keys():
+        elif not feed or "title" not in feed.keys():
             return "untitled{ts}".format(ts=time.time_ns())
         else:
             return feed.title.encode("utf-8", errors="ignore").decode()

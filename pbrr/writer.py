@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple
 
 from pbrr.parsed_feed_item import ParsedFeedItem
 from pbrr.parsed_feed_site import ParsedFeedSite
+from pbrr.settings import Settings
 
 MAIN_TEMPLATE = "index"
 MAIN_SITES_LIST_ITEM_TEMPLATE = "sites_list_item"
@@ -17,8 +18,8 @@ TEMPLATES_FOLDER = "templates"
 
 
 class Writer:
-    def __init__(self, base_output_path: str) -> None:
-        self.base_output_path = base_output_path
+    def __init__(self, settings: Settings) -> None:
+        self.settings = settings
         self.enqueued_data = []  # type: List[Tuple[ParsedFeedSite, List[ParsedFeedItem]]]
 
     def enqueue(self, site: ParsedFeedSite, entries: List[ParsedFeedItem]) -> None:
@@ -35,9 +36,10 @@ class Writer:
             site,
             entries,
         ) in self.enqueued_data:
-            self._save_site(site)
-            self._save_entries(entries, site)
-            self._save_entries_list(entries, site)
+            if entries:
+                self._save_site(site)
+                self._save_entries(entries, site)
+                self._save_entries_list(entries, site)
             enqueued_sites.append(site)
         self.enqueued_data.clear()
 
@@ -93,15 +95,15 @@ class Writer:
             ]
         )
 
-        with open(os.path.join(self.base_output_path, "index.html"), "w") as sites_list_file_handle:
+        with open(os.path.join(self.settings.base_output_path, "index.html"), "w") as sites_list_file_handle:
             sites_list_file_handle.write(self._load_template(MAIN_TEMPLATE).format(sites=sites_markup))
 
     def _ensure_base_path(self) -> None:
-        if not os.path.exists(self.base_output_path):
-            os.mkdir(self.base_output_path)
+        if not os.path.exists(self.settings.base_output_path):
+            os.mkdir(self.settings.base_output_path)
 
     def _site_path(self, site: ParsedFeedSite) -> str:
-        return os.path.join(self.base_output_path, site.title_for_filename)
+        return os.path.join(self.settings.base_output_path, site.title_for_filename)
 
     @staticmethod
     def _stringified_date(original_date: Optional[time.struct_time]) -> str:
@@ -128,6 +130,6 @@ class Writer:
     # and let it re-create corresponding folder with new files
     def _copy_template_required_files_if_needed(self) -> None:
         for folder in ["css", "fonts", "js"]:
-            path = os.path.join(self.base_output_path, folder)
+            path = os.path.join(self.settings.base_output_path, folder)
             if not os.path.exists(path):
                 copy_tree(os.path.join(BASE_FOLDER, TEMPLATES_FOLDER, folder), path)

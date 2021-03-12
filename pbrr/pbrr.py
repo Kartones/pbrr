@@ -3,6 +3,7 @@ from typing import List, cast
 from pbrr.parsed_feed_item import ParsedFeedItem
 from pbrr.parsed_feed_site import ParsedFeedSite
 from pbrr.parser import Parser
+from pbrr.settings import Settings
 from pbrr.writer import Writer
 
 
@@ -12,14 +13,17 @@ class PBRR:
         self.opml_filename = opml_filename
 
     def run(self) -> None:
-        parser = Parser(base_input_path=self.data_path)
-        writer = Writer(base_output_path=self.data_path)
+        settings = Settings(base_output_path=self.data_path)
+        settings.load()
+
+        parser = Parser(settings=settings)
+        writer = Writer(settings=settings)
 
         sites_metadata = parser.fetch_sites_metadata(self.opml_filename)
 
         for url, title in sites_metadata:
             try:
-                parsed_data = parser.parse(url, title)
+                parsed_data = parser.fetch(url=url, title=title)
             except ValueError:
                 continue
 
@@ -29,3 +33,4 @@ class PBRR:
             writer.enqueue(site, entries)
 
         writer.save()
+        settings.save()
