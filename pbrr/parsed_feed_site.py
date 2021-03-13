@@ -1,5 +1,6 @@
 import re
 import time
+from typing import Optional
 
 
 class ParsedFeedSite:
@@ -7,14 +8,15 @@ class ParsedFeedSite:
     # .isalnum() leaves accents and other unwanted characters
     REGEX_ONLY_ALPHANUMERIC = re.compile("[^a-zA-Z]")
 
-    def __init__(self, title: str, link: str, last_updated: time.struct_time) -> None:
+    def __init__(self, title: str, category: Optional[str], link: str, last_updated: time.struct_time) -> None:
         self.title = title
         self.link = link
+        self.category = category
         self.last_updated = last_updated
 
     def __str__(self) -> str:
-        return "ParsedFeedSite: {title} ({link}) last update: {last_updated}".format(
-            title=self.title, link=self.link, last_updated=self.last_updated
+        return "ParsedFeedSite: {title} - {category} ({link}) last update: {last_updated}".format(
+            title=self.title, category=self.category, link=self.link, last_updated=self.last_updated
         )
 
     @property

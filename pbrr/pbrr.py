@@ -21,9 +21,9 @@ class PBRR:
 
         sites_metadata = parser.fetch_sites_metadata(self.opml_filename)
 
-        for url, title in sites_metadata:
+        for url, title, category in sites_metadata:
             try:
-                parsed_data = parser.fetch(url=url, title=title)
+                parsed_data = parser.fetch_site(url=url, title=title, category=category)
             except ValueError:
                 continue
 

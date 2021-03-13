@@ -1,5 +1,6 @@
 import os
 import time
+from collections import defaultdict
 from distutils.dir_util import copy_tree
 from typing import List, Optional, Tuple
 
@@ -12,9 +13,12 @@ MAIN_SITES_LIST_ITEM_TEMPLATE = "sites_list_item"
 ENTRIES_LIST_TEMPLATE = "entries_list"
 ENTRIES_LIST_ITEM_TEMPLATE = "entries_list_item"
 ENTRY_TEMPLATE = "entry"
+SITES_CATEGORY_TEMPLATE = "sites_category"
 
 BASE_FOLDER = "pbrr"
 TEMPLATES_FOLDER = "templates"
+
+NO_CATEGORY_TITLE = "Uncategorized"
 
 
 class Writer:
@@ -43,7 +47,7 @@ class Writer:
             enqueued_sites.append(site)
         self.enqueued_data.clear()
 
-        enqueued_sites = self._sort_sites_list_by_last_updated(enqueued_sites)
+        enqueued_sites = self._sort_sites_list(enqueued_sites)
         self._save_sites_list(enqueued_sites)
         enqueued_sites.clear()
 
@@ -52,11 +56,13 @@ class Writer:
             os.mkdir(self._site_path(site))
 
     def _save_entries(self, entries: List[ParsedFeedItem], site: ParsedFeedSite) -> None:
+        entry_template = self._load_template(ENTRY_TEMPLATE)
+
         for entry in entries:
             entry_filename = os.path.join(self._site_path(site), entry.html_filename)
             with open(entry_filename, "w") as entry_file_handle:
                 entry_file_handle.write(
-                    self._load_template(ENTRY_TEMPLATE).format(
+                    entry_template.format(
                         title=entry.title,
                         link=entry.link,
                         back_link="{folder}/index.html".format(folder=site.title_for_filename),
@@ -66,9 +72,11 @@ class Writer:
                 )
 
     def _save_entries_list(self, entries: List[ParsedFeedItem], site: ParsedFeedSite) -> None:
+        entry_list_item_template = self._load_template(ENTRIES_LIST_ITEM_TEMPLATE)
+
         entries_markup = "\n".join(
             [
-                self._load_template(ENTRIES_LIST_ITEM_TEMPLATE).format(
+                entry_list_item_template.format(
                     relative_path="{folder}/{file}".format(folder=site.title_for_filename, file=entry.html_filename),
                     title=entry.title,
                     published=self._stringified_date(entry.published),
@@ -80,20 +88,31 @@ class Writer:
         with open(os.path.join(self._site_path(site), "index.html"), "w") as entries_list_file_handle:
             entries_list_file_handle.write(self._load_template(ENTRIES_LIST_TEMPLATE).format(entries=entries_markup))
 
-    def _sort_sites_list_by_last_updated(self, sites: List[ParsedFeedSite]) -> List[ParsedFeedSite]:
-        return sorted(sites, key=lambda s: time.mktime(s.last_updated) if s.last_updated else 0, reverse=True)
+    def _sort_sites_list(self, sites: List[ParsedFeedSite]) -> List[ParsedFeedSite]:
+        return sorted(sites, key=lambda s: s.title)
 
     def _save_sites_list(self, sites: List[ParsedFeedSite]) -> None:
-        sites_markup = "\n".join(
-            [
-                self._load_template(MAIN_SITES_LIST_ITEM_TEMPLATE).format(
+        sites_category_template = self._load_template(SITES_CATEGORY_TEMPLATE)
+        sites_list_item_template = self._load_template(MAIN_SITES_LIST_ITEM_TEMPLATE)
+
+        sites_by_category = defaultdict(list)
+        for site in sites:
+            category = site.category if site.category else NO_CATEGORY_TITLE
+            sites_by_category[category].append(
+                sites_list_item_template.format(
                     relative_path="{folder}/index.html".format(folder=site.title_for_filename),
                     title=site.title,
                     last_update=self._stringified_date(site.last_updated),
                 )
-                for site in sites
-            ]
-        )
+            )
+
+        sites_markup = ""
+        for category in sorted(sites_by_category.keys()):
+            sites_markup += sites_category_template.format(
+                category=category,
+                sites="\n".join(sites_by_category[category]),
+                category_id=self._category_id_for_html(category),
+            )
 
         with open(os.path.join(self.settings.base_output_path, "index.html"), "w") as sites_list_file_handle:
             sites_list_file_handle.write(self._load_template(MAIN_TEMPLATE).format(sites=sites_markup))
@@ -118,6 +137,10 @@ class Writer:
             if original_date
             else ""
         )
+
+    @staticmethod
+    def _category_id_for_html(category: str) -> str:
+        return "id-" + "".join([char for char in category if char.isalnum()])
 
     @staticmethod
     def _load_template(template_name: str) -> str:
