@@ -103,6 +103,7 @@ class Writer:
                     relative_path="{folder}/index.html".format(folder=site.title_for_filename),
                     title=site.title,
                     last_update=self._stringified_date(site.last_updated),
+                    last_update_ts=self._js_timestamp(site.last_updated),
                 )
             )
 
@@ -137,6 +138,10 @@ class Writer:
             if original_date
             else ""
         )
+
+    @staticmethod
+    def _js_timestamp(original_date: Optional[time.struct_time]) -> int:
+        return int(time.mktime(original_date) * 1000) if original_date else 0
 
     @staticmethod
     def _category_id_for_html(category: str) -> str:

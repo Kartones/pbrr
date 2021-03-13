@@ -2,14 +2,17 @@
 
 ## Intro
 
-Building a simple RSS reader that fetches feeds from an OPML file and generates a simple html hierarchy with the posts grouped per site.
+Building a simple RSS reader that fetches feeds from an OPML file and generates a simple html hierarchy with the posts grouped per site and category (if the OPML file had categories).
 
-No complex website intentions, just cron-based runs dumping new entries, not even deleting old ones (list will anyway only reflect latest N items). Keep minimum state.
+No intention of building any complex website, just cron-based runs dumping new entries, not even deleting old ones (list will anyway only reflect latest N items). Keep minimum state.
 
-
-**Note**: Totally WIP. It already works but probably not yet production-ready. Here's how it looks:
+Here's how it looks (pending new screenshot with categories):
 
 ![PBRR screenshot](doc/screenshot.png)
+
+If a feed/site has no news (returns an http 304), it will keep the existing list of posts.
+
+It uses `localStorage` to keep track of your last visit and display/hide the latest post timestamp badge on the site name. Not very advanced at the moment but decent enough to see new posts.
 
 ## Setup
 
