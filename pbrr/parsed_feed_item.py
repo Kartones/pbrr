@@ -10,7 +10,7 @@ class ParsedFeedItem:
     ) -> None:
         self.title = title
         self.link = link
-        self.published = published
+        self.published = published if published else time.gmtime(0)
         self.content = content
         self.parent = parent
 
@@ -19,13 +19,9 @@ class ParsedFeedItem:
             title=self.title,
             link=self.link,
             parent=self.parent.title,
-            published=self.published if self.published else "",
+            published=self.published,
             content_length=len(self.content),
         )
-
-    @property
-    def published_struct_time(self) -> time.struct_time:
-        return self.published or time.gmtime(0)
 
     @property
     def html_filename(self) -> str:
@@ -33,10 +29,4 @@ class ParsedFeedItem:
 
     @property
     def date_for_filename(self) -> str:
-        if self.published:
-            if isinstance(self.published, time.struct_time):
-                return "{ts}".format(ts=time.mktime(self.published))
-            else:
-                return self.published.replace("-", "").replace("+", "").replace(":", "").replace("T", "-")
-        else:
-            return "{ts}".format(ts=time.time_ns())
+        return "{ts}".format(ts=time.mktime(self.published))

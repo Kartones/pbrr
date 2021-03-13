@@ -91,13 +91,10 @@ class Parser:
             parsed_entries.append(self._parse_entry(entry=entry, parsed_site=parsed_site))
 
         # reorder by most recent first (seen inverse order)
-        parsed_entries = sorted(parsed_entries, key=lambda s: (s.published_struct_time), reverse=True)
+        parsed_entries = sorted(parsed_entries, key=lambda s: (s.published), reverse=True)
         # correct site last update time with latest entry if needed (some sites report incorrectly or not even have)
-        if (
-            parsed_site.last_updated == time.gmtime(0)
-            or parsed_entries[0].published_struct_time < parsed_site.last_updated
-        ):
-            parsed_site.last_updated = parsed_entries[0].published_struct_time
+        if parsed_site.last_updated == time.gmtime(0) or parsed_entries[0].published < parsed_site.last_updated:
+            parsed_site.last_updated = parsed_entries[0].published
 
         Log.info("> Fetched: {title}".format(title=title))
 
@@ -158,12 +155,14 @@ class Parser:
                 last_updated=None,
             )
 
-        # Seen feeds without any date at all
-        if "updated" in feed.keys():
-            last_updated = feed.updated_parsed if "updated_parsed" in feed.keys() else feed.updated
-        elif "published" in feed.keys():
-            last_updated = feed.published_parsed if "published_parsed" in feed.keys() else feed.published
-        else:
+        last_updated = None
+        # Seen feeds without any date at all, and keeping things simple, if can't parse, assume not present
+        if "updated_parsed" in feed.keys():
+            last_updated = feed.updated_parsed
+        elif "published_parsed" in feed.keys():
+            last_updated = feed.published_parsed
+
+        if not last_updated:
             last_updated = time.gmtime(0)
 
         return ParsedFeedSite(
