@@ -24,6 +24,10 @@ class ParsedFeedItem:
         )
 
     @property
+    def published_struct_time(self) -> time.struct_time:
+        return self.published or time.gmtime(0)
+
+    @property
     def html_filename(self) -> str:
         return "{}.html".format(self.date_for_filename)
 

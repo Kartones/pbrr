@@ -90,6 +90,15 @@ class Parser:
         for entry in source_site.entries:
             parsed_entries.append(self._parse_entry(entry=entry, parsed_site=parsed_site))
 
+        # reorder by most recent first (seen inverse order)
+        parsed_entries = sorted(parsed_entries, key=lambda s: (s.published_struct_time), reverse=True)
+        # correct site last update time with latest entry if needed (some sites report incorrectly or not even have)
+        if (
+            parsed_site.last_updated == time.gmtime(0)
+            or parsed_entries[0].published_struct_time < parsed_site.last_updated
+        ):
+            parsed_site.last_updated = parsed_entries[0].published_struct_time
+
         Log.info("> Fetched: {title}".format(title=title))
 
         return {self.KEY_SITE: parsed_site, self.KEY_ENTRIES: parsed_entries}
@@ -155,7 +164,7 @@ class Parser:
         elif "published" in feed.keys():
             last_updated = feed.published_parsed if "published_parsed" in feed.keys() else feed.published
         else:
-            last_updated = ""
+            last_updated = time.gmtime(0)
 
         return ParsedFeedSite(
             title=cls._sanitize_site_title(feed=feed, provided_title=provided_title),

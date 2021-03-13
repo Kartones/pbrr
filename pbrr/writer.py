@@ -66,7 +66,7 @@ class Writer:
                         title=entry.title,
                         link=entry.link,
                         back_link="{folder}/index.html".format(folder=site.title_for_filename),
-                        published=self._stringified_date(entry.published),
+                        published=self._stringified_date(entry.published, include_time=True),
                         content=entry.content,
                     )
                 )
@@ -126,18 +126,22 @@ class Writer:
         return os.path.join(self.settings.base_output_path, site.title_for_filename)
 
     @staticmethod
-    def _stringified_date(original_date: Optional[time.struct_time]) -> str:
-        return (
-            "{year:04d}-{month:02d}-{day:02d} {hour:02d}:{mins:02d}".format(
-                year=original_date.tm_year,
-                month=original_date.tm_mon,
-                day=original_date.tm_mday,
-                hour=original_date.tm_hour,
-                mins=original_date.tm_min,
-            )
-            if original_date
-            else ""
-        )
+    def _stringified_date(original_date: Optional[time.struct_time], include_time: bool = False) -> str:
+        if original_date:
+            if include_time:
+                return "{year:04d}-{month:02d}-{day:02d} {hour:02d}:{mins:02d}".format(
+                    year=original_date.tm_year,
+                    month=original_date.tm_mon,
+                    day=original_date.tm_mday,
+                    hour=original_date.tm_hour,
+                    mins=original_date.tm_min,
+                )
+            else:
+                return "{year:04d}-{month:02d}-{day:02d}".format(
+                    year=original_date.tm_year, month=original_date.tm_mon, day=original_date.tm_mday
+                )
+        else:
+            return ""
 
     @staticmethod
     def _js_timestamp(original_date: Optional[time.struct_time]) -> int:

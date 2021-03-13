@@ -58,7 +58,6 @@ For the time being, no intention of adding tests to the project.
 
 ## TODOs
 
-- Check which site field to use for `Site.last_updated`, some sites lie, others don't have it.
 - run mypy on pre-commit if possible
 
 ## License
