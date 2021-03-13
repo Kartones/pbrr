@@ -166,28 +166,22 @@ class Parser:
 
     @classmethod
     def _parse_entry(cls, entry: Any, parsed_site: ParsedFeedSite) -> ParsedFeedItem:
+        content = ""
+        content_key = None
+        is_array = False
+
         # seen some entries on same site with and without summary_detail, so can't just sample and apply to all
-        no_content = False
         if "content" in entry.keys():
             content_key = "content"
             is_array = True
         elif "summary_detail" in entry.keys():
             content_key = "summary_detail"
-            is_array = False
-        else:
-            no_content = True
 
-        if no_content:
-            content = ""
-        else:
+        if content_key:
             if is_array:
-                content = [
-                    content.value.encode("cp1252", errors="ignore").decode("UTF-8", errors="ignore")
-                    for content in entry[content_key]
-                    if content.type == "text/html"
-                ][0]
+                content = [content.value for content in entry[content_key] if content.type == "text/html"][0]
             else:
-                content = entry[content_key].value.encode("cp1252", errors="ignore").decode("UTF-8", errors="ignore")
+                content = entry[content_key].value
 
         published = cls._published_field_from(entry)
 
