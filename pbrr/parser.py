@@ -59,7 +59,7 @@ class Parser:
     ) -> Dict[str, Union[ParsedFeedSite, List[ParsedFeedItem]]]:
         try:
             source_site = feedparser.parse(
-                url, agent="pbrr/0.2 (https://github.com/Kartones/pbrr)", modified=self.settings.last_fetch_mark
+                url, agent="pbrr/1.0 (https://github.com/Kartones/pbrr)", modified=self.settings.last_fetch_mark
             )
         except Exception as e:
             # else need to directly catch urllib errors
