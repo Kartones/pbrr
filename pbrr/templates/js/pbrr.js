@@ -11,6 +11,8 @@
     $("#sites").find("span.last-update-date").each(function() {
         if ($(this).data("ts") < lastVisit) {
             $(this).hide();
+        } else {
+            $(this).parent().parent().collapse("show");
         }
     });
 

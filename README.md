@@ -50,6 +50,8 @@ Uses:
 - [feedparser](https://feedparser.readthedocs.io) for easier handling of feeds, and yet, they keep causing headaches
 - [Unpoly](https://unpoly.com/) for AJAX, because you don't always need React
 
+To be able to perform AJAX calls in local, with Firefox you need to allow CORS with local `file://` urls: type `about:config` and set `privacy.file_unique_origin` to `false` (remember to change it back to `true` when finished!).
+
 ## Testing
 
 *Here be dragons*
