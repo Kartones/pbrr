@@ -1,8 +1,10 @@
 import os
 import time
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import feedparser
+import requests
 from bs4 import BeautifulSoup
 
 from pbrr.log import Log
@@ -58,41 +60,38 @@ class Parser:
         self, url: str, title: Optional[str], category: Optional[str]
     ) -> Dict[str, Union[ParsedFeedSite, List[ParsedFeedItem]]]:
         try:
-            source_site = feedparser.parse(
-                url, agent="pbrr/1.0 (https://github.com/Kartones/pbrr)", modified=self.settings.last_fetch_mark
+            feed_response = requests.get(
+                url,
+                headers={
+                    "User-Agent": "pbrr/1.0 (https://github.com/Kartones/pbrr)",
+                    "If-Modified-Since": self._format_if_modified_header(self.settings.last_fetch_mark),
+                },
+                timeout=15,
             )
-        except Exception as e:
+            source_site = feedparser.parse(feed_response.text)
+        except (Exception) as e:
             # else need to directly catch urllib errors
             if "Name or service not known" in str(e):
                 Log.warn_and_raise_error("{title} ({url}) skipped, error fetching url".format(title=title, url=url))
             else:
-                Log.warn(
-                    "{title} ({url}) skipped. Error: {error} Headers: {headers}".format(
-                        title=title,
-                        url=url,
-                        error=e,
-                        headers=",".join(
-                            ["{}={}".format(key, source_site.headers[key]) for key in source_site.headers.keys()]
-                        ),
-                    )
-                )
-                raise e
+                Log.warn("{title} ({url}) skipped. Error: {error}".format(title=title, url=url, error=e))
+                raise ValueError(str(e))
 
         # don't override, leave content as it is
-        if source_site.status == 304:
+        if feed_response.status_code == 304:
             return self._not_modified_site(title, category)
 
-        self._log_and_error_if_proceeds(url=url, title=title, source_site=source_site)
+        self._log_and_error_if_proceeds(
+            url=url, title=title, source_site=source_site, response_status_code=feed_response.status_code
+        )
 
         parsed_site = self._parse_site(feed=source_site.feed, provided_title=title, category=category)
 
-        parsed_entries = []  # type: List[ParsedFeedItem]
-        for entry in source_site.entries:
-            parsed_entries.append(self._parse_entry(entry=entry, parsed_site=parsed_site))
+        parsed_entries = [self._parse_entry(entry=entry, parsed_site=parsed_site) for entry in source_site.entries]
 
-        # reorder by most recent first (seen inverse order)
-        parsed_entries = sorted(parsed_entries, key=lambda s: (s.published), reverse=True)
         if parsed_entries:
+            # reorder by most recent first (seen inverse order)
+            parsed_entries = sorted(parsed_entries, key=lambda s: (s.published), reverse=True)
             # correct site last update time with latest entry (some sites report incorrectly or not even have)
             parsed_site.last_updated = parsed_entries[0].published
 
@@ -100,42 +99,60 @@ class Parser:
 
         return {self.KEY_SITE: parsed_site, self.KEY_ENTRIES: parsed_entries}
 
+    # from feedparser source
+    # https://github.com/kurtmckee/feedparser/blob/bae53018cd99520e2be1b96e7d51bd5799b02ac9/feedparser/http.py#L95
     @staticmethod
-    def _log_and_error_if_proceeds(url: str, title: Optional[str], source_site: Any) -> None:
+    def _format_if_modified_header(modified: Any) -> Optional[str]:
+        if isinstance(modified, datetime):
+            modified = modified.utctimetuple()
+        if modified:
+            short_weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+            months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+            return "%s, %02d %s %04d %02d:%02d:%02d GMT" % (
+                short_weekdays[modified[6]],
+                modified[2],
+                months[modified[1] - 1],
+                modified[0],
+                modified[3],
+                modified[4],
+                modified[5],
+            )
+        else:
+            return None
+
+    @staticmethod
+    def _log_and_error_if_proceeds(url: str, title: Optional[str], source_site: Any, response_status_code: int) -> None:
         # just warn, don't skip
-        if "bozo" in source_site.keys() and source_site["bozo"] == 1 and source_site.status != 200:
+        if "bozo" in source_site.keys() and source_site["bozo"] == 1 and response_status_code != 200:
             Log.info(
-                "{title} ({url}) bozo=1 http_status:{status}".format(title=title, url=url, status=source_site.status)
+                "{title} ({url}) bozo=1 http_status:{status}".format(title=title, url=url, status=response_status_code)
             )
 
         # should always skip by raising error
         if (
             not source_site.feed.keys()
             or "link" not in source_site.feed.keys()
-            or source_site.status in [401, 403, 404]
+            or response_status_code in [401, 403, 404]
         ):
             Log.warn_and_raise_error(
-                "{title} ({url}) skipped, feed malformed or not retrieved. HTTP Status: {status} Headers: {headers}".format(
+                "{title} ({url}) skipped, feed malformed/not retrieved. HTTPStatus: {status}".format(
                     title=title,
                     url=url,
-                    status=source_site.status,
-                    headers=",".join(
-                        ["{}={}".format(key, source_site.headers[key]) for key in source_site.headers.keys()]
-                    ),
+                    status=response_status_code,
                 )
             )
 
-        if source_site.status in [301]:
+        if response_status_code in [301]:
             Log.warn(
                 "{title} ({url}) has moved ({status}) Check new URL".format(
-                    title=title, url=url, status=source_site.status
+                    title=title, url=url, status=response_status_code
                 )
             )
 
-        if source_site.status in [410]:
+        if response_status_code in [410]:
             Log.warn_and_raise_error(
                 "{title} ({url}) skipped, received http_status:{status} Url gone".format(
-                    title=title, url=url, status=source_site.status
+                    title=title, url=url, status=response_status_code
                 )
             )
 
