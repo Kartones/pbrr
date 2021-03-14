@@ -1,7 +1,7 @@
 import json
 import os
 from datetime import datetime
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from pbrr.log import Log
 
@@ -9,6 +9,8 @@ SETTINGS_FILENAME = "settings.json"
 KEY_LAST_FETCH = "last_fetch"
 # domains to skip (e.g. can't fetch right now via pbrr). to be manually added editing the settings json
 KEY_SKIP_URLS = "skip_urls"
+# map of category id -> emoji prefix. to be manually added editing the settings json
+KEY_EMOJI_ICONS = "category_emoji_icons"
 
 
 class Settings:
@@ -16,6 +18,7 @@ class Settings:
         self.base_output_path = base_output_path
         self.last_fetch_mark = None  # type: Optional[datetime]
         self.skip_urls = []  # type: List[str]
+        self.category_icons = {}  # type: Dict[str, str]
 
     def load(self) -> None:
         file_path = os.path.join(self.base_output_path, SETTINGS_FILENAME)
@@ -31,6 +34,8 @@ class Settings:
             self.skip_urls = data[KEY_SKIP_URLS]
             Log.info("> Skip urls list: {}".format(self.skip_urls))
 
+            self.category_icons = data.get(KEY_EMOJI_ICONS, {})
+
     def save(self) -> None:
         fetch_mark = datetime.now()
         file_path = os.path.join(self.base_output_path, SETTINGS_FILENAME)
@@ -41,6 +46,7 @@ class Settings:
         data = {
             KEY_LAST_FETCH: fetch_mark.timestamp(),
             KEY_SKIP_URLS: self.skip_urls,
+            KEY_EMOJI_ICONS: self.category_icons,
         }
 
         with open(file_path, "w") as file_handle:

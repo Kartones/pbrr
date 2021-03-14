@@ -37,6 +37,8 @@ Root `index.html` with lists of sites will be placed at `feeds/index.html` once 
 
 Also, a `settings.json` file will be generated. Inside it, you can add urls to the skip urls setting (e.g. if a feed is not working with PBRR). It's a list of strings, you can manually add new entries, for example `"https://site-to-skip.test"`.
 
+Another "internal hack" you can do inside the settings file is add new entries under the `category_emoji_icons` block, for example: "`"category_emoji_icons": {"id-NewsGames": "🎮"}`" and it will render the emoji (really a prefix) before the corresponding category title.
+
 ## Development
 
 ```

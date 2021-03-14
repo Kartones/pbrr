@@ -98,6 +98,7 @@ class Writer:
         sites_by_category = defaultdict(list)
         for site in sites:
             category = site.category if site.category else NO_CATEGORY_TITLE
+
             sites_by_category[category].append(
                 sites_list_item_template.format(
                     relative_path="{folder}/index.html".format(folder=site.title_for_filename),
@@ -109,10 +110,17 @@ class Writer:
 
         sites_markup = ""
         for category in sorted(sites_by_category.keys()):
+            category_id = self._category_id_for_html(category)
+            if category_id in self.settings.category_icons:
+                icon = "{} ".format(self.settings.category_icons[category_id])
+            else:
+                icon = ""
+
             sites_markup += sites_category_template.format(
                 category=category,
                 sites="\n".join(sites_by_category[category]),
                 category_id=self._category_id_for_html(category),
+                icon=icon,
             )
 
         with open(os.path.join(self.settings.base_output_path, "index.html"), "w") as sites_list_file_handle:
