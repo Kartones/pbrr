@@ -92,8 +92,9 @@ class Parser:
 
         # reorder by most recent first (seen inverse order)
         parsed_entries = sorted(parsed_entries, key=lambda s: (s.published), reverse=True)
-        # correct site last update time with latest entry (some sites report incorrectly or not even have)
-        parsed_site.last_updated = parsed_entries[0].published
+        if parsed_entries:
+            # correct site last update time with latest entry (some sites report incorrectly or not even have)
+            parsed_site.last_updated = parsed_entries[0].published
 
         Log.info("> Fetched: {title}".format(title=title))
 
