@@ -2,8 +2,16 @@
     padding: 5px 10px;
 }
 
+div.row {
+    margin-right: 0;
+}
+
 img {
     max-width: 1500px;
+}
+
+div.panel-body > p > a {
+    text-decoration: underline;
 }
 
 button.category {
