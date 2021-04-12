@@ -10,3 +10,29 @@ button.category {
     display: block;
     margin: 6px 6px 0 6px;
 }
+
+@media (prefers-color-scheme:dark) {
+    body {
+        color: #DCD8D9;
+        background-color: #2A2A2E;
+    }
+
+    a {
+        color: #DCD8D9;
+    }
+
+    img {
+        filter: grayscale(30%);
+        background-color: #EEE;
+    }
+
+    div.panel-default {
+        border-color: #4C4C4E;
+    }
+
+    button.btn, a.list-group-item, .panel-default > .panel-heading, div.panel-body {
+        color: #DCD8D9;
+        background-color: #2A2A2E;
+        border-color: #4C4C4E;
+    }
+}
