@@ -87,13 +87,20 @@ class Parser:
 
         parsed_site = self._parse_site(feed=source_site.feed, provided_title=title, category=category)
 
-        parsed_entries = [self._parse_entry(entry=entry, parsed_site=parsed_site) for entry in source_site.entries]
+        entries_count = len(source_site.entries) - 1
+
+        parsed_entries = [
+            self._parse_entry(entry=entry, parsed_site=parsed_site, entry_reverse_index=(entries_count - index))
+            for index, entry in enumerate(source_site.entries)
+        ]
 
         if parsed_entries:
             # reorder by most recent first (seen inverse order)
             parsed_entries = sorted(parsed_entries, key=lambda s: (s.published), reverse=True)
             # correct site last update time with latest entry (some sites report incorrectly or not even have)
             parsed_site.last_updated = parsed_entries[0].published
+            # and cut to a reasonable limit (seen also feeds with full dumps maybe? of content)
+            parsed_entries = parsed_entries[:15]
 
         Log.info("> Fetched: {title}".format(title=title))
 
@@ -190,7 +197,7 @@ class Parser:
         )
 
     @classmethod
-    def _parse_entry(cls, entry: Any, parsed_site: ParsedFeedSite) -> ParsedFeedItem:
+    def _parse_entry(cls, entry: Any, parsed_site: ParsedFeedSite, entry_reverse_index: int) -> ParsedFeedItem:
         content = ""
         content_key = None
         is_array = False
@@ -208,20 +215,21 @@ class Parser:
             else:
                 content = entry[content_key].value
 
-        published = cls._published_field_from(entry)
+        published = cls._published_field_from(entry=entry, entry_reverse_index=entry_reverse_index)
 
         return ParsedFeedItem(
             title=entry.title, link=entry.link, published=published, content=content, parent=parsed_site
         )
 
     @staticmethod
-    def _published_field_from(entry: Any) -> Optional[time.struct_time]:
+    def _published_field_from(entry: Any, entry_reverse_index: int) -> Optional[time.struct_time]:
         if "published" in entry.keys():
             published = entry.published_parsed if "published_parsed" in entry.keys() else entry.published
         elif "updated" in entry.keys():
             published = entry.updated_parsed if "updated_parsed" in entry.keys() else entry.updated
         else:
-            published = None
+            # fake some time to avoid collisions when generating files
+            published = time.gmtime(entry_reverse_index * 10)
 
         return published
 
