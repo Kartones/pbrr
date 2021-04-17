@@ -208,10 +208,16 @@ class Parser:
             is_array = True
         elif "summary_detail" in entry.keys():
             content_key = "summary_detail"
+        elif "title_detail" in entry.keys():
+            content_key = "title_detail"
 
         if content_key:
             if is_array:
-                content = [content.value for content in entry[content_key] if content.type == "text/html"][0]
+                content_by_type = [content.value for content in entry[content_key] if content.type == "text/html"]
+                if not content:
+                    content_by_type = [content.value for content in entry[content_key] if content.type == "text/plain"]
+                content = content_by_type[0] if content_by_type else ""
+
             else:
                 content = entry[content_key].value
 
