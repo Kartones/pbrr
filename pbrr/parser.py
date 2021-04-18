@@ -214,10 +214,9 @@ class Parser:
         if content_key:
             if is_array:
                 content_by_type = [content.value for content in entry[content_key] if content.type == "text/html"]
-                if not content:
+                if not content_by_type:
                     content_by_type = [content.value for content in entry[content_key] if content.type == "text/plain"]
                 content = content_by_type[0] if content_by_type else ""
-
             else:
                 content = entry[content_key].value
 
