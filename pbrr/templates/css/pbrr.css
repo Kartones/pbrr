@@ -10,7 +10,7 @@ img {
     max-width: 1500px;
 }
 
-div.panel-body > p > a {
+div.panel-body a {
     text-decoration: underline;
 }
 
