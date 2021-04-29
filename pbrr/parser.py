@@ -95,6 +95,8 @@ class Parser:
         ]
 
         if parsed_entries:
+            parsed_entries = self._filter_entries(parsed_entries)
+
             # reorder by most recent first (seen inverse order)
             parsed_entries = sorted(parsed_entries, key=lambda s: (s.published), reverse=True)
             # correct site last update time with latest entry (some sites report incorrectly or not even have)
@@ -105,6 +107,13 @@ class Parser:
         Log.info("> Fetched: {title}".format(title=title))
 
         return {self.KEY_SITE: parsed_site, self.KEY_ENTRIES: parsed_entries}
+
+    def _filter_entries(self, entries: List[ParsedFeedItem]) -> List[ParsedFeedItem]:
+        return [
+            entry
+            for entry in entries
+            if not any([True for title in self.settings.skip_filters if title in entry.title])
+        ]
 
     # from feedparser source
     # https://github.com/kurtmckee/feedparser/blob/bae53018cd99520e2be1b96e7d51bd5799b02ac9/feedparser/http.py#L95
