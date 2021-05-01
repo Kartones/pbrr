@@ -1,8 +1,8 @@
 import os
-import time
 from collections import defaultdict
+from datetime import datetime
 from distutils.dir_util import copy_tree
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 from pbrr.parsed_feed_item import ParsedFeedItem
 from pbrr.parsed_feed_site import ParsedFeedSite
@@ -134,23 +134,15 @@ class Writer:
         return os.path.join(self.settings.base_output_path, site.title_for_filename)
 
     @staticmethod
-    def _stringified_date(original_date: time.struct_time, include_time: bool = False) -> str:
+    def _stringified_date(original_date: datetime, include_time: bool = False) -> str:
         if include_time:
-            return "{year:04d}-{month:02d}-{day:02d} {hour:02d}:{mins:02d}".format(
-                year=original_date.tm_year,
-                month=original_date.tm_mon,
-                day=original_date.tm_mday,
-                hour=original_date.tm_hour,
-                mins=original_date.tm_min,
-            )
+            return original_date.strftime("%Y-%m-%d %H:%M")
         else:
-            return "{year:04d}-{month:02d}-{day:02d}".format(
-                year=original_date.tm_year, month=original_date.tm_mon, day=original_date.tm_mday
-            )
+            return original_date.strftime("%Y-%m-%d")
 
     @staticmethod
-    def _js_timestamp(original_date: Optional[time.struct_time]) -> int:
-        return int(time.mktime(original_date) * 1000) if original_date else 0
+    def _js_timestamp(original_date: datetime) -> int:
+        return int(original_date.timestamp() * 1000)
 
     @staticmethod
     def _category_id_for_html(category: str) -> str:

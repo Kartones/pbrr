@@ -1,16 +1,13 @@
-import time
-from typing import Optional
+from datetime import datetime
 
 from pbrr.parsed_feed_site import ParsedFeedSite
 
 
 class ParsedFeedItem:
-    def __init__(
-        self, title: str, link: str, published: Optional[time.struct_time], content: str, parent: ParsedFeedSite
-    ) -> None:
+    def __init__(self, title: str, link: str, published: datetime, content: str, parent: ParsedFeedSite) -> None:
         self.title = title
         self.link = link
-        self.published = published if published else time.gmtime(0)
+        self.published = published
         self.content = content
         self.parent = parent
 
@@ -29,4 +26,4 @@ class ParsedFeedItem:
 
     @property
     def date_for_filename(self) -> str:
-        return "{ts}".format(ts=time.mktime(self.published))
+        return "{ts}".format(ts=self.published.timestamp())

@@ -1,6 +1,6 @@
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import feedparser
@@ -187,23 +187,14 @@ class Parser:
                 link=None,
                 last_updated=None,
             )
-
-        last_updated = None
-        # Seen feeds without any date at all, and keeping things simple, if can't parse, assume not present
-        if "updated_parsed" in feed.keys():
-            last_updated = feed.updated_parsed
-        elif "published_parsed" in feed.keys():
-            last_updated = feed.published_parsed
-
-        if not last_updated:
-            last_updated = time.gmtime(0)
-
-        return ParsedFeedSite(
-            title=cls._sanitize_site_title(feed=feed, provided_title=provided_title),
-            category=category,
-            link=feed.link,
-            last_updated=last_updated,
-        )
+        else:
+            return ParsedFeedSite(
+                title=cls._sanitize_site_title(feed=feed, provided_title=provided_title),
+                category=category,
+                link=feed.link,
+                # field set later, unreliable from main feed
+                last_updated=None,
+            )
 
     @classmethod
     def _parse_entry(cls, entry: Any, parsed_site: ParsedFeedSite, entry_reverse_index: int) -> ParsedFeedItem:
@@ -236,16 +227,20 @@ class Parser:
         )
 
     @staticmethod
-    def _published_field_from(entry: Any, entry_reverse_index: int) -> Optional[time.struct_time]:
+    def _published_field_from(entry: Any, entry_reverse_index: int) -> datetime:
         if "published" in entry.keys():
             published = entry.published_parsed if "published_parsed" in entry.keys() else entry.published
         elif "updated" in entry.keys():
             published = entry.updated_parsed if "updated_parsed" in entry.keys() else entry.updated
         else:
             # fake some time to avoid collisions when generating files
-            published = time.gmtime(entry_reverse_index * 10)
+            published = time.gmtime(entry_reverse_index * 60)
 
-        return published
+        published_datetime = datetime.fromtimestamp(time.mktime(published))
+        # use seconds as a way to differentiate each entry, so if two are published at the same time, don't collide
+        published_datetime = published_datetime + timedelta(seconds=entry_reverse_index)
+
+        return published_datetime
 
     @staticmethod
     def _sanitize_site_title(feed: Any, provided_title: Optional[str]) -> str:
