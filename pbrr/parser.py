@@ -99,12 +99,13 @@ class Parser:
 
             # reorder by most recent first (seen inverse order)
             parsed_entries = sorted(parsed_entries, key=lambda s: (s.published), reverse=True)
-            # correct site last update time with latest entry (some sites report incorrectly or not even have)
-            parsed_site.last_updated = parsed_entries[0].published
             # and cut to a reasonable limit (seen also feeds with full dumps maybe? of content)
             parsed_entries = parsed_entries[:15]
 
-        Log.info("> Fetched: {title}".format(title=title))
+            # correct site last update time with latest entry (some sites report incorrectly or not even have)
+            parsed_site.last_updated = parsed_entries[0].published
+
+        Log.info("> Fetched: {title} ({last_updated})".format(title=title, last_updated=parsed_site.last_updated))
 
         return {self.KEY_SITE: parsed_site, self.KEY_ENTRIES: parsed_entries}
 

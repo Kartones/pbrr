@@ -12,7 +12,7 @@ class ParsedFeedSite:
         self.title = title
         self.link = link
         self.category = category
-        self.last_updated = last_updated
+        self.last_updated = last_updated if last_updated else datetime.min
 
     def __str__(self) -> str:
         return "ParsedFeedSite: {title} - {category} ({link}) last update: {last_updated}".format(
