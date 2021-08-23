@@ -12,7 +12,10 @@ class ParsedFeedSite:
         self.title = title
         self.link = link
         self.category = category
-        self.last_updated = last_updated if last_updated else datetime.min
+        if last_updated and last_updated.year > 1900:
+            self.last_updated = last_updated
+        else:
+            self.last_updated = datetime.fromisoformat("1970-01-01")
 
     def __str__(self) -> str:
         return "ParsedFeedSite: {title} - {category} ({link}) last update: {last_updated}".format(

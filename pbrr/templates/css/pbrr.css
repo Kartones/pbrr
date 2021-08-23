@@ -17,6 +17,7 @@ div.panel-body a {
 button.category {
     display: block;
     margin: 6px 6px 0 6px;
+    border-width: 3px;
 }
 
 @media (prefers-color-scheme:dark) {
