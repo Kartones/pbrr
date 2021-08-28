@@ -48,7 +48,9 @@
                 feedNode[0].dataset.currentEntries.length > 0 ? feedNode[0].dataset.currentEntries.split(",") : [];
             const currentReadEntries = readFeedData(feedNode[0].id);
 
-            if (currentEntries.length === 0 || currentReadEntries.size >= currentEntries.length) {
+            // No data returned from server, or no new entries
+            if (currentEntries.length === 0
+                || currentEntries.filter(entry => !currentReadEntries.has(entry)).length === 0) {
                 spanNode.hide();
             } else {
                 parentDivNode.collapse("show");
@@ -77,7 +79,7 @@
             }
         }
 
-        if (currentReadEntries.size >= entries.length) {
+        if (entries.filter(entry => !currentReadEntries.has(entry)).length === 0) {
             document.getElementById(feedId)
                     .getElementsByClassName("last-update-date")[0]
                     .classList
