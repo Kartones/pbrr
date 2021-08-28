@@ -21,7 +21,7 @@ class ParsedFeedSite:
     @property
     def id(self) -> str:
         hashAlgoritm = hashlib.md5()
-        hashAlgoritm.update(str.encode(self.link if self.link else self.title))
+        hashAlgoritm.update(str.encode(self.title))
         return hashAlgoritm.hexdigest()
 
     @property

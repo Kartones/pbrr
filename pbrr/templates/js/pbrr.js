@@ -19,12 +19,19 @@
     }
 
     function markPostViewed(postId, feedId) {
+        let currentReadEntriesOnly;
         let currentData = readFeedData(feedId);
         currentData.add(postId);
 
-        // "Garbage Collect" past read entries, as no longer relevant
-        const currentEntries = document.getElementById(feedId).dataset.currentEntries.split(",");
-        const currentReadEntriesOnly = Array.from(currentData).filter(entry => currentEntries.includes(entry));
+        const currentEntriesRaw = document.getElementById(feedId).dataset.currentEntries;
+        // server retrieved no data, so can't cleanup
+        if (currentEntriesRaw.length > 0) {
+            // "Garbage Collect" past read entries, as no longer relevant
+            const currentEntries = currentEntriesRaw.split(",");
+            currentReadEntriesOnly = Array.from(currentData).filter(entry => currentEntries.includes(entry));
+        } else {
+            currentReadEntriesOnly = Array.from(currentData);
+        }
 
         localStorage.setItem(feedId, currentReadEntriesOnly.join(","));
     }
@@ -36,10 +43,12 @@
             const feedNode = spanNode.parent();
             const parentDivNode = feedNode.parent();
 
-            const currentEntries = feedNode[0].dataset.currentEntries.split(",");
+            // If server returned no data, will come empty
+            const currentEntries =
+                feedNode[0].dataset.currentEntries.length > 0 ? feedNode[0].dataset.currentEntries.split(",") : [];
             const currentReadEntries = readFeedData(feedNode[0].id);
 
-            if (currentReadEntries.size === currentEntries.length) {
+            if (currentEntries.length === 0 || currentReadEntries.size >= currentEntries.length) {
                 spanNode.hide();
             } else {
                 parentDivNode.collapse("show");
@@ -68,7 +77,7 @@
             }
         }
 
-        if (currentReadEntries.size === entries.length) {
+        if (currentReadEntries.size >= entries.length) {
             document.getElementById(feedId)
                     .getElementsByClassName("last-update-date")[0]
                     .classList

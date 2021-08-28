@@ -100,7 +100,7 @@ class Parser:
             # reorder by most recent first (seen inverse order)
             parsed_entries = sorted(parsed_entries, key=lambda s: (s.published), reverse=True)
             # and cut to a reasonable limit (seen also feeds with full dumps maybe? of content)
-            parsed_entries = parsed_entries[:15]
+            parsed_entries = parsed_entries[:12]
 
             # correct site last update time with latest entry (some sites report incorrectly or not even have)
             parsed_site.last_updated = parsed_entries[0].published
