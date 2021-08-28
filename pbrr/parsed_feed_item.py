@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime
 
 from pbrr.parsed_feed_site import ParsedFeedSite
@@ -21,9 +22,16 @@ class ParsedFeedItem:
         )
 
     @property
+    def id(self) -> str:
+        hashAlgoritm = hashlib.md5()
+        # Because some feeds contain non-unique links (e.g. Github activity RSS points to repositories)
+        hashAlgoritm.update(str.encode(self.link + self.title))
+        return hashAlgoritm.hexdigest()
+
+    @property
     def html_filename(self) -> str:
-        return "{}.html".format(self.date_for_filename)
+        return "{ts}_{id}.html".format(ts=self.date_for_filename, id=self.id)
 
     @property
     def date_for_filename(self) -> str:
-        return "{ts}".format(ts=self.published.timestamp())
+        return "{ts}".format(ts=int(self.published.timestamp()))

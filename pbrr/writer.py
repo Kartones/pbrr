@@ -2,7 +2,7 @@ import os
 from collections import defaultdict
 from datetime import datetime
 from distutils.dir_util import copy_tree
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 from pbrr.parsed_feed_item import ParsedFeedItem
 from pbrr.parsed_feed_site import ParsedFeedSite
@@ -36,6 +36,8 @@ class Writer:
 
         enqueued_sites = []  # type: List[ParsedFeedSite]
 
+        entries_per_site = {}  # type: Dict[str, List[str]]
+
         for (
             site,
             entries,
@@ -44,11 +46,13 @@ class Writer:
                 self._save_site(site)
                 self._save_entries(entries, site)
                 self._save_entries_list(entries, site)
+                self._set_entries_per_site(entries, site, entries_per_site)
             enqueued_sites.append(site)
+
         self.enqueued_data.clear()
 
         enqueued_sites = self._sort_sites_list(enqueued_sites)
-        self._save_sites_list(enqueued_sites)
+        self._save_sites_list(enqueued_sites, entries_per_site)
         enqueued_sites.clear()
 
     def _save_site(self, site: ParsedFeedSite) -> None:
@@ -79,6 +83,8 @@ class Writer:
                 entry_list_item_template.format(
                     relative_path="{folder}/{file}".format(folder=site.title_for_filename, file=entry.html_filename),
                     title=entry.title,
+                    id=entry.id,
+                    parent_id=site.id,
                     published=self._stringified_date(entry.published),
                 )
                 for entry in entries
@@ -88,10 +94,15 @@ class Writer:
         with open(os.path.join(self._site_path(site), "index.html"), "w") as entries_list_file_handle:
             entries_list_file_handle.write(self._load_template(ENTRIES_LIST_TEMPLATE).format(entries=entries_markup))
 
+    def _set_entries_per_site(
+        self, entries: List[ParsedFeedItem], site: ParsedFeedSite, entries_per_site: Dict[str, List[str]]
+    ) -> None:
+        entries_per_site[site.id] = [entry.id for entry in entries]
+
     def _sort_sites_list(self, sites: List[ParsedFeedSite]) -> List[ParsedFeedSite]:
         return sorted(sites, key=lambda s: s.title)
 
-    def _save_sites_list(self, sites: List[ParsedFeedSite]) -> None:
+    def _save_sites_list(self, sites: List[ParsedFeedSite], entries_per_site: Dict[str, List[str]]) -> None:
         sites_category_template = self._load_template(SITES_CATEGORY_TEMPLATE)
         sites_list_item_template = self._load_template(MAIN_SITES_LIST_ITEM_TEMPLATE)
 
@@ -102,9 +113,11 @@ class Writer:
             sites_by_category[category].append(
                 sites_list_item_template.format(
                     relative_path="{folder}/index.html".format(folder=site.title_for_filename),
+                    id=site.id,
                     title=site.title,
                     last_update=self._stringified_date(site.last_updated),
                     last_update_ts=self._js_timestamp(site.last_updated),
+                    current_entries=",".join(entries_per_site[site.id]) if site.id in entries_per_site else "",
                 )
             )
 

@@ -1,13 +1,9 @@
-import re
+import hashlib
 from datetime import datetime
 from typing import Optional
 
 
 class ParsedFeedSite:
-
-    # .isalnum() leaves accents and other unwanted characters
-    REGEX_ONLY_ALPHANUMERIC = re.compile("[^a-zA-Z]")
-
     def __init__(self, title: str, category: Optional[str], link: str, last_updated: Optional[datetime]) -> None:
         self.title = title
         self.link = link
@@ -23,5 +19,11 @@ class ParsedFeedSite:
         )
 
     @property
+    def id(self) -> str:
+        hashAlgoritm = hashlib.md5()
+        hashAlgoritm.update(str.encode(self.link if self.link else self.title))
+        return hashAlgoritm.hexdigest()
+
+    @property
     def title_for_filename(self) -> str:
-        return self.REGEX_ONLY_ALPHANUMERIC.sub("", self.title.lower())
+        return self.id
