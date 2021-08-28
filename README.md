@@ -12,7 +12,7 @@ Here's how it looks:
 
 If a feed/site has no news (returns an http 304), it will keep the existing list of posts.
 
-It uses `localStorage` to keep track of your last visits per category and display/hide the latest post timestamp badge on the site name. Clicking on the category (to expand/collapse) will mark that category as "viewed" at that point in time. Not very advanced at the moment but decent enough to see new posts.
+It uses `localStorage` to keep track of your last visits (per site post).
 
 ## Setup
 
@@ -55,8 +55,6 @@ Uses:
 To be able to perform AJAX calls in local, with Firefox you need to allow CORS with local `file://` urls: type `about:config` and set `privacy.file_unique_origin` to `false` (remember to change it back to `true` when finished!).
 
 ## Testing
-
-*Here be dragons*
 
 For the time being, no intention of adding tests to the project.
 
