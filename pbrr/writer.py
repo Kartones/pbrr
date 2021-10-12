@@ -173,5 +173,5 @@ class Writer:
     def _copy_template_required_files_if_needed(self) -> None:
         for folder in ["css", "fonts", "js"]:
             path = os.path.join(self.settings.base_output_path, folder)
-            if not os.path.exists(path):
-                copy_tree(os.path.join(BASE_FOLDER, TEMPLATES_FOLDER, folder), path)
+            # if not os.path.exists(path):
+            copy_tree(os.path.join(BASE_FOLDER, TEMPLATES_FOLDER, folder), path)

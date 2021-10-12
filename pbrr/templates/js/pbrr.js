@@ -13,25 +13,49 @@
         markPostViewed(this.id, this.dataset.parentId);
     });
 
+    $("#sites").on("click", "a.action-mark-all-read", function () {
+        markAllPostsViewed(this.dataset.parentId);
+    });
+
     function readFeedData(feedId) {
         const currentData = localStorage.getItem(feedId);
         return new Set(currentData ? currentData.split(",") : []);
     }
 
-    function markPostViewed(postId, feedId) {
+    function garbageCollectOldEntries(feedId, currentData) {
         let currentReadEntriesOnly;
-        let currentData = readFeedData(feedId);
-        currentData.add(postId);
 
         const currentEntriesRaw = document.getElementById(feedId).dataset.currentEntries;
-        // server retrieved no data, so can't cleanup
         if (currentEntriesRaw.length > 0) {
             // "Garbage Collect" past read entries, as no longer relevant
             const currentEntries = currentEntriesRaw.split(",");
             currentReadEntriesOnly = Array.from(currentData).filter(entry => currentEntries.includes(entry));
         } else {
+            // server retrieved no data, so can't cleanup
             currentReadEntriesOnly = Array.from(currentData);
         }
+
+        return currentReadEntriesOnly;
+    }
+
+    function markAllPostsViewed(feedId) {
+        let currentData = readFeedData(feedId);
+
+        document.querySelectorAll(`a.list-group-item[data-parent-id="${feedId}"]`).forEach(entry => {
+            currentData.add(entry.id);
+        });
+
+        const currentReadEntriesOnly = garbageCollectOldEntries(feedId, currentData);
+
+        localStorage.setItem(feedId, currentReadEntriesOnly.join(","));
+    }
+
+    function markPostViewed(postId, feedId) {
+        let currentData = readFeedData(feedId);
+
+        currentData.add(postId);
+
+        const currentReadEntriesOnly = garbageCollectOldEntries(feedId, currentData);
 
         localStorage.setItem(feedId, currentReadEntriesOnly.join(","));
     }
@@ -41,7 +65,7 @@
         $("#sites").find("span.last-update-date").each(function() {
             const spanNode = $(this);
             const feedNode = spanNode.parent();
-            const parentDivNode = feedNode.parent();
+            const parentDivNode = feedNode.parent().parent;
 
             // If server returned no data, will come empty
             const currentEntries =
