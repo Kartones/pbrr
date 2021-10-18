@@ -47,6 +47,12 @@ button.category {
     top: 6px;
 }
 
+#navigation-sidebar {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+}
+
 @media (prefers-color-scheme:dark) {
     body {
         color: #DCD8D9;

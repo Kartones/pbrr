@@ -41,13 +41,20 @@
     function markAllPostsViewed(feedId) {
         let currentData = readFeedData(feedId);
 
+        let feedIsVisible = false;
+
         document.querySelectorAll(`a.list-group-item[data-parent-id="${feedId}"]`).forEach(entry => {
             currentData.add(entry.id);
+            feedIsVisible = true;
         });
 
-        const currentReadEntriesOnly = garbageCollectOldEntries(feedId, currentData);
+        if (feedIsVisible) {
+            const currentReadEntriesOnly = garbageCollectOldEntries(feedId, currentData);
 
-        localStorage.setItem(feedId, currentReadEntriesOnly.join(","));
+            $(document.getElementById(feedId)).parent().parent().collapse("hide");
+
+            localStorage.setItem(feedId, currentReadEntriesOnly.join(","));
+        }
     }
 
     function markPostViewed(postId, feedId) {
@@ -65,7 +72,7 @@
         $("#sites").find("span.last-update-date").each(function() {
             const spanNode = $(this);
             const feedNode = spanNode.parent();
-            const parentDivNode = feedNode.parent().parent;
+            const parentDivNode = feedNode.parent().parent();
 
             // If server returned no data, will come empty
             const currentEntries =
