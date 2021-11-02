@@ -1,37 +1,86 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PBRR</title>
+<html lang="en" dir="ltr">
 
-    <link href="css/unpoly.min.css" rel="stylesheet" />
-    <link href="css/bootstrap.min.css" rel="stylesheet" />
-    <link href="css/unpoly-bootstrap3.min.css" rel="stylesheet" />
-    <link href="css/pbrr.css" rel="stylesheet" />
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PBRR</title>
+
+  <!-- https://milligram.io/ -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/milligram.min.css">
+  <link rel="stylesheet" href="css/pbrr.css" />
+
+  <script src="js/react.development.js"></script>
+  <script src="js/react-dom.development.js"></script>
+  <script src="js/babel.min.js"></script>
+
+  <script src="js/pbrr.js"></script>
 </head>
 <body>
+  <div id="root">
+  </div>
+  <script type="text/babel">
 
-    <div class="row">
+    const PostsList = (props) => {
+      const { postsData } = props;
 
-        <div id="navigation-sidebar" class="col-md-2">
-            <nav role="navigation">
-                <div class="list-group" id="sites">
-                    {sites}
-                </div>
-            </nav>
+      const rows = postsData.map((row, index) => {
+        return (
+          <div className="post-container" key={index}>
+            <h5 className="post-button button button-outline button-black">
+              {row.title} | {row.site} <span className="badge">{row.formattedDate}</span>
+            </h5>
+            <div className="post-content" dangerouslySetInnerHTML={{ __html: row.content }} />
+          </div>
+        );
+      });
+
+      return (
+        <div className="accordion">
+          {rows}
         </div>
+      );
+    }
 
-        <div id="feed-content" class="col-md-10">
-            <article></article>
-        </div>
+    class App extends React.Component {
 
-    </div>
+      state = {
+        posts: [],
+      }
 
-    <script src="js/jquery.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/unpoly.min.js"></script>
-    <script src="js/unpoly-bootstrap3.min.js"></script>
-    <script src="js/pbrr.js"></script>
+      // TODO: check if best place to put this logic
+      constructor(props) {
+        super(props);
+        read(this.onPostsRead);
+      }
+
+      onPostsRead = (postsRead) => {
+        const { posts } = this.state;
+
+        this.setState({
+          posts: postsRead
+        });
+
+        // Note: this would add it multiple times, but now is not a valid scenario
+        initAccordion('.accordion');
+      }
+
+      render() {
+        const { posts } = this.state;
+
+        return (
+          <div className="container">
+            <PostsList postsData={posts} />
+          </div>
+        );
+      }
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+
+  </script>
 </body>
+
 </html>

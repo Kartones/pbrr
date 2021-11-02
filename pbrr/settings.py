@@ -5,11 +5,7 @@ from typing import Dict, List, Optional
 
 from pbrr.log import Log
 
-# For development, debugging, etc.
-SET_LAST_FETCH_MARK = False
-
-SETTINGS_FILENAME = "settings.json"
-KEY_LAST_FETCH = "last_fetch"
+SETTINGS_FILENAME = "settings-v2.json"
 # domains to skip (e.g. can't fetch right now via pbrr). to be manually added editing the settings json
 KEY_SKIP_URLS = "skip_urls"
 # map of category id -> emoji prefix. to be manually added editing the settings json
@@ -32,11 +28,6 @@ class Settings:
             with open(file_path, "r") as file_handle:
                 data = json.load(file_handle)
 
-            last_fetch = data.get(KEY_LAST_FETCH, None)
-            if last_fetch and SET_LAST_FETCH_MARK:
-                self.last_fetch_mark = datetime.utcfromtimestamp(last_fetch)
-                Log.info("> Previous fetch mark was: {}".format(self.last_fetch_mark))
-
             self.skip_urls = data[KEY_SKIP_URLS]
             Log.info("> Skip urls list: {}".format(self.skip_urls))
 
@@ -45,14 +36,12 @@ class Settings:
             self.skip_filters = data.get(KEY_SKIP_FILTERS, [])
 
     def save(self) -> None:
-        fetch_mark = datetime.now()
         file_path = os.path.join(self.base_output_path, SETTINGS_FILENAME)
 
         if not os.path.exists(self.base_output_path):
             Log.error_and_exit("Output path '{}' not found".format(self.base_output_path))
 
         data = {
-            KEY_LAST_FETCH: fetch_mark.timestamp() if SET_LAST_FETCH_MARK else None,
             KEY_SKIP_URLS: self.skip_urls,
             KEY_EMOJI_ICONS: self.category_icons,
             KEY_SKIP_FILTERS: self.skip_filters,
@@ -60,8 +49,3 @@ class Settings:
 
         with open(file_path, "w") as file_handle:
             json.dump(data, file_handle, indent=None)
-
-        if SET_LAST_FETCH_MARK:
-            Log.info("> Fetch mark set to: {}".format(fetch_mark))
-        else:
-            Log.info("> Fetch mark skipped")
