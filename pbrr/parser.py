@@ -1,4 +1,5 @@
 import os
+import re
 import time
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -187,6 +188,10 @@ class Parser:
                 content = entry[content_key].value
 
         published = cls._published_field_from(entry=entry, entry_reverse_index=entry_reverse_index)
+
+        content = re.sub(r"<script>.*?<\/script>", "", content, count=0, flags=re.I | re.S)
+        content = re.sub(r"<img (.*?) />", r'<img loading="lazy" \1 />', content, count=0, flags=re.I | re.S)
+        content = re.sub(r"<a (.*?)>", r'<a target="_blank" \1>', content, count=0, flags=re.I | re.S)
 
         return ParsedFeedItem(
             title=entry.title, link=entry.link, published=published, content=content, parent=parsed_site
