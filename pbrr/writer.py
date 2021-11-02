@@ -4,6 +4,7 @@ from distutils.dir_util import copy_tree
 from distutils.file_util import copy_file
 from typing import List, Tuple
 
+from pbrr.log import Log
 from pbrr.parsed_feed_item import ParsedFeedItem
 from pbrr.parsed_feed_site import ParsedFeedSite
 from pbrr.settings import Settings
@@ -21,6 +22,8 @@ KEY_ENTRIES = "entries"
 KEY_TITLE = "title"
 KEY_URL = "url"
 KEY_CONTENT = "content"
+KEY_CATEGORY = "category"
+KEY_CATEGORY_ICON = "category_icon"
 
 MAIN_TEMPLATE = "index"
 
@@ -63,6 +66,8 @@ class Writer:
         site_filepath = self._site_data_path(site)
         data = {
             KEY_TITLE: site.title,
+            KEY_CATEGORY: site.category,
+            KEY_CATEGORY_ICON: self.settings.category_icons.get(site.category, None),
             KEY_ENTRIES: {
                 str(entry.published.timestamp()): {
                     KEY_TITLE: entry.title,
@@ -75,6 +80,7 @@ class Writer:
         }
         with open(site_filepath, "w") as file_handle:
             json.dump(data, file_handle, indent=2)
+        Log.info("> Written: {title} ({count} entries)".format(title=site.title, count=len(entries)))
 
     def _ensure_base_path(self) -> None:
         if not os.path.exists(self.settings.base_output_path):

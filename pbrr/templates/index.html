@@ -23,6 +23,26 @@
   </div>
   <script type="text/babel">
 
+    const CategoryIcon = (props) => {
+      const { category, categoryIcon } = props;
+
+      if (!categoryIcon) {
+        return '';
+      }
+
+      return (
+        <span title={category}>{categoryIcon}</span>
+      );
+    }
+
+    function siteCategory(row) {
+      if (!row.site_category_icon) {
+        return '';
+      }
+
+      return ` <span>${row.site_category_icon}<span>`;
+    }
+
     const PostsList = (props) => {
       const { postsData } = props;
 
@@ -30,7 +50,7 @@
         return (
           <div className="post-container" key={index}>
             <h5 className="post-button button button-outline button-black">
-              {row.title} | {row.site} <span className="badge">{row.formattedDate}</span>
+              {row.title} | {row.site} <CategoryIcon category={row.site_category} categoryIcon={row.site_category_icon} /> <span className="badge">{row.formattedDate}</span> <a href={row.url} target="blank">🌐</a>
             </h5>
             <div className="post-content" dangerouslySetInnerHTML={{ __html: row.content }} />
           </div>

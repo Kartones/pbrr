@@ -1,6 +1,6 @@
-// about:config & privacy.file_unique_origin = false for firefox
 
 function initAccordion(element) {
+  // TODO: add parent item to not set so high
   document.addEventListener('click', function (e) {
     if (!e.target.matches(element + ' .post-button')) {
       return;
@@ -18,7 +18,7 @@ function read(setStateFunction) {
     .then(sitesList => Promise.all(sitesList.sites.map(filename => fetch(filename))))
     .then(responses => Promise.all(responses.map(response => response.json())))
     .then(sites => sites.map(site => _parseSite(site, allFeeds)))
-    .then(() => _presentData(allFeeds, setStateFunction));
+    .then(() => _onDataReady(allFeeds, setStateFunction));
 }
 
 function _parseSite(jsonData, allFeeds) {
@@ -30,12 +30,13 @@ function _parseSite(jsonData, allFeeds) {
       'url': entry.url,
       'content': entry.content,
       'site': jsonData.title,
+      'site_category': jsonData.category,
+      'site_category_icon': jsonData.category_icon,
     }))
     .forEach(entry => allFeeds.push(entry));
 }
 
-// TODO: rename
-function _presentData(allFeeds, setStateFunction) {
+function _onDataReady(allFeeds, setStateFunction) {
   allFeeds.sort((first, second) => second.date > first.date ? 1 : -1);
 
   if (setStateFunction) {
@@ -45,7 +46,11 @@ function _presentData(allFeeds, setStateFunction) {
   }
 }
 
+function _zeroPadded(value) {
+  return value < 10 ? `0${value}` : `${value}`;
+}
+
 function _formattedDate(timestamp) {
   const date = new Date(timestamp * 1000);
-  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
+  return `${_zeroPadded(date.getDate())}/${_zeroPadded(date.getMonth() + 1)}/${date.getFullYear()} ${_zeroPadded(date.getHours())}:${_zeroPadded(date.getMinutes())}`;
 }

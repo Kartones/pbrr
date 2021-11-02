@@ -44,6 +44,13 @@
   text-align: center;
   text-decoration: none;
   white-space: nowrap;
+  cursor: auto;
+}
+
+.accordion .post-button a {
+  font-size: 1.5em;
+  vertical-align: middle;
+  margin-left: 6px;
 }
 
 .button-black {

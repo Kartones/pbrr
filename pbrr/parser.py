@@ -1,4 +1,5 @@
 import os
+import re
 import time
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -94,23 +95,32 @@ class Parser:
         ]
 
         if parsed_entries:
+            parsed_entries = self._skip_entries(parsed_entries)
             parsed_entries = self._filter_entries(parsed_entries)
-
-            # reorder by most recent first (seen inverse order)
-            parsed_entries = sorted(parsed_entries, key=lambda s: (s.published), reverse=True)
-            # and cut to a reasonable limit (seen also feeds with full dumps maybe? of content)
-            parsed_entries = parsed_entries[:12]
 
         Log.info("> Fetched: {title}".format(title=title))
 
         return {self.KEY_SITE: parsed_site, self.KEY_ENTRIES: parsed_entries}
 
-    def _filter_entries(self, entries: List[ParsedFeedItem]) -> List[ParsedFeedItem]:
+    def _skip_entries(self, entries: List[ParsedFeedItem]) -> List[ParsedFeedItem]:
         return [
             entry
             for entry in entries
             if not any([True for title in self.settings.skip_filters if title in entry.title])
         ]
+
+    def _filter_entries(self, entries: List[ParsedFeedItem]) -> List[ParsedFeedItem]:
+        # reorder by most recent first (seen inverse order)
+        entries = sorted(entries, key=lambda s: (s.published), reverse=True)
+        # cut to a reasonable limit (seen also feeds with full dumps of content)
+        entries = entries[: self.settings.num_entries_per_feed]
+
+        if not self.settings.entry_max_age_months:
+            return entries
+
+        min_post_datetime = datetime.now() - timedelta(days=self.settings.entry_max_age_months * 30)
+
+        return [entry for entry in entries if entry.published >= min_post_datetime]
 
     @staticmethod
     def _log_and_error_if_proceeds(url: str, title: Optional[str], source_site: Any, response_status_code: int) -> None:
@@ -187,6 +197,10 @@ class Parser:
                 content = entry[content_key].value
 
         published = cls._published_field_from(entry=entry, entry_reverse_index=entry_reverse_index)
+
+        content = re.sub(r"<script>.*?<\/script>", "", content, count=0, flags=re.I | re.S)
+        content = re.sub(r"<img (.*?) />", r'<img loading="lazy" \1 />', content, count=0, flags=re.I | re.S)
+        content = re.sub(r"<a (.*?)>", r'<a target="_blank" \1>', content, count=0, flags=re.I | re.S)
 
         return ParsedFeedItem(
             title=entry.title, link=entry.link, published=published, content=content, parent=parsed_site
