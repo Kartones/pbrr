@@ -18,10 +18,11 @@
   </div>
 
   <script type="module">
-    import { h, Component, render } from 'https://unpkg.com/preact?module';
-    import htm from 'https://unpkg.com/htm?module';
+    // import { h, Component, render } from 'https://unpkg.com/preact?module';
+    // import htm from 'https://unpkg.com/htm?module';
+    import { h, html, Component, render } from 'https://unpkg.com/htm/preact/index.mjs?module'
 
-    const html = htm.bind(h);
+    // const html = htm.bind(h);
 
     const CategoryIcon = (props) => {
       const { category, categoryIcon } = props;
@@ -47,14 +48,14 @@
       const { postsData } = props;
 
       const rows = postsData.map((row, index) => {
+        let contentDiv = h('div', {innerHTML: row.content, className: 'post-content'});
+
         return (
           html`<div className="post-container" key=${index}>
             <h5 className="post-button button button-outline button-black">
               ${row.title} | ${row.site} <${CategoryIcon} category=${row.site_category} categoryIcon=${row.site_category_icon} /> <span className="badge">${row.formattedDate}</span> <a href=${row.url} target="blank">🌐</a>
             </h5>
-            <div className="post-content">
-              ${row.content}
-            </div>
+            ${contentDiv}
           </div>`
         );
       });
