@@ -1,5 +1,9 @@
 # PBRR - Pretty Basic RSS Reader
 
+## Note
+
+I'm working on a big rewrite of the project, using Python only for fetching data (and storing into json files) and then Javascript (and inline React & Babel) for the reader. You can check it at the [minimalistic branch](https://github.com/Kartones/pbrr/tree/minimalistic).
+
 ## Intro
 
 Building a simple RSS reader that fetches feeds from an OPML file and generates a simple html hierarchy with the posts grouped per site and category (if the OPML file had categories).
