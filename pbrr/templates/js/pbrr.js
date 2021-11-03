@@ -52,5 +52,6 @@ function _zeroPadded(value) {
 
 function _formattedDate(timestamp) {
   const date = new Date(timestamp * 1000);
+
   return `${_zeroPadded(date.getDate())}/${_zeroPadded(date.getMonth() + 1)}/${date.getFullYear()} ${_zeroPadded(date.getHours())}:${_zeroPadded(date.getMinutes())}`;
 }

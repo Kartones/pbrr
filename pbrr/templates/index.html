@@ -6,41 +6,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PBRR</title>
 
-  <!-- https://milligram.io/ -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
   <link rel="stylesheet" href="css/normalize.css">
   <link rel="stylesheet" href="css/milligram.min.css">
   <link rel="stylesheet" href="css/pbrr.css" />
-
-  <script src="js/react.development.js"></script>
-  <script src="js/react-dom.development.js"></script>
-  <script src="js/babel.min.js"></script>
 
   <script src="js/pbrr.js"></script>
 </head>
 <body>
   <div id="root">
   </div>
-  <script type="text/babel">
+
+  <script type="module">
+    import { h, Component, render } from 'https://unpkg.com/preact?module';
+    import htm from 'https://unpkg.com/htm?module';
+
+    const html = htm.bind(h);
 
     const CategoryIcon = (props) => {
       const { category, categoryIcon } = props;
 
       if (!categoryIcon) {
         return '';
+      } else {
+        return (
+          html`<span title=${category}>${categoryIcon}</span>`
+        );
       }
-
-      return (
-        <span title={category}>{categoryIcon}</span>
-      );
     }
 
     function siteCategory(row) {
       if (!row.site_category_icon) {
         return '';
+      } else {
+        return html` <span>${row.site_category_icon}<span>`;
       }
-
-      return ` <span>${row.site_category_icon}<span>`;
     }
 
     const PostsList = (props) => {
@@ -48,23 +48,25 @@
 
       const rows = postsData.map((row, index) => {
         return (
-          <div className="post-container" key={index}>
+          html`<div className="post-container" key=${index}>
             <h5 className="post-button button button-outline button-black">
-              {row.title} | {row.site} <CategoryIcon category={row.site_category} categoryIcon={row.site_category_icon} /> <span className="badge">{row.formattedDate}</span> <a href={row.url} target="blank">🌐</a>
+              ${row.title} | ${row.site} <${CategoryIcon} category=${row.site_category} categoryIcon=${row.site_category_icon} /> <span className="badge">${row.formattedDate}</span> <a href=${row.url} target="blank">🌐</a>
             </h5>
-            <div className="post-content" dangerouslySetInnerHTML={{ __html: row.content }} />
-          </div>
+            <div className="post-content">
+              ${row.content}
+            </div>
+          </div>`
         );
       });
 
       return (
-        <div className="accordion">
-          {rows}
-        </div>
+        html`<div className="accordion">
+          ${rows}
+        </div>`
       );
     }
 
-    class App extends React.Component {
+    class App extends Component {
 
       state = {
         posts: [],
@@ -91,16 +93,16 @@
         const { posts } = this.state;
 
         return (
-          <div className="container">
-            <PostsList postsData={posts} />
-          </div>
+          html`<div className="container">
+            <${PostsList} postsData=${posts} />
+          </div>`
         );
       }
     }
 
-    ReactDOM.render(<App />, document.getElementById('root'));
+    render(html`<${App} />`, document.getElementById('root'));
 
   </script>
-</body>
 
+</body>
 </html>
