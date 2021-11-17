@@ -1,37 +1,109 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PBRR</title>
+<html lang="en" dir="ltr">
 
-    <link href="css/unpoly.min.css" rel="stylesheet" />
-    <link href="css/bootstrap.min.css" rel="stylesheet" />
-    <link href="css/unpoly-bootstrap3.min.css" rel="stylesheet" />
-    <link href="css/pbrr.css" rel="stylesheet" />
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PBRR</title>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/milligram.min.css">
+  <link rel="stylesheet" href="css/pbrr.css" />
+
+  <script src="js/pbrr.js"></script>
 </head>
 <body>
+  <div id="root">
+  </div>
 
-    <div class="row">
+  <script type="module">
+    // import { h, Component, render } from 'https://unpkg.com/preact?module';
+    // import htm from 'https://unpkg.com/htm?module';
+    import { h, html, Component, render } from 'https://unpkg.com/htm/preact/index.mjs?module'
 
-        <div id="navigation-sidebar" class="col-md-2">
-            <nav role="navigation">
-                <div class="list-group" id="sites">
-                    {sites}
-                </div>
-            </nav>
-        </div>
+    // const html = htm.bind(h);
 
-        <div id="feed-content" class="col-md-10">
-            <article></article>
-        </div>
+    const CategoryIcon = (props) => {
+      const { category, categoryIcon } = props;
 
-    </div>
+      if (!categoryIcon) {
+        return '';
+      } else {
+        return (
+          html`<span title=${category}>${categoryIcon}</span>`
+        );
+      }
+    }
 
-    <script src="js/jquery.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/unpoly.min.js"></script>
-    <script src="js/unpoly-bootstrap3.min.js"></script>
-    <script src="js/pbrr.js"></script>
+    function siteCategory(row) {
+      if (!row.site_category_icon) {
+        return '';
+      } else {
+        return html` <span>${row.site_category_icon}<span>`;
+      }
+    }
+
+    const PostsList = (props) => {
+      const { postsData } = props;
+
+      const rows = postsData.map((row, index) => {
+        let contentDiv = h('div', {innerHTML: row.content, className: 'post-content'});
+
+        return (
+          html`<div className="post-container" key=${index}>
+            <h5 className="post-button button button-outline button-black">
+              ${row.title} | ${row.site} <${CategoryIcon} category=${row.site_category} categoryIcon=${row.site_category_icon} /> <span className="badge">${row.formattedDate}</span> <a href=${row.url} target="blank">🌐</a>
+            </h5>
+            ${contentDiv}
+          </div>`
+        );
+      });
+
+      return (
+        html`<div className="accordion">
+          ${rows}
+        </div>`
+      );
+    }
+
+    class App extends Component {
+
+      state = {
+        posts: [],
+      }
+
+      // TODO: check if best place to put this logic
+      constructor(props) {
+        super(props);
+        read(this.onPostsRead);
+      }
+
+      onPostsRead = (postsRead) => {
+        const { posts } = this.state;
+
+        this.setState({
+          posts: postsRead
+        });
+
+        // Note: this would add it multiple times, but now is not a valid scenario
+        initAccordion('.accordion');
+      }
+
+      render() {
+        const { posts } = this.state;
+
+        return (
+          html`<div className="container">
+            <${PostsList} postsData=${posts} />
+          </div>`
+        );
+      }
+    }
+
+    render(html`<${App} />`, document.getElementById('root'));
+
+  </script>
+
 </body>
 </html>

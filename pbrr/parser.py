@@ -1,4 +1,5 @@
 import os
+import re
 import time
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -63,8 +64,7 @@ class Parser:
             feed_response = requests.get(
                 url,
                 headers={
-                    "User-Agent": "pbrr/1.0 (https://github.com/Kartones/pbrr)",
-                    "If-Modified-Since": self._format_if_modified_header(self.settings.last_fetch_mark),
+                    "User-Agent": "pbrr/2.0 (https://github.com/Kartones/pbrr)",
                 },
                 timeout=15,
             )
@@ -79,6 +79,7 @@ class Parser:
 
         # don't override, leave content as it is
         if feed_response.status_code == 304:
+            Log.warn("304 returned for: {title}".format(title=title))
             return self._not_modified_site(title, category)
 
         self._log_and_error_if_proceeds(
@@ -87,55 +88,39 @@ class Parser:
 
         parsed_site = self._parse_site(feed=source_site.feed, provided_title=title, category=category)
 
-        entries_count = len(source_site.entries) - 1
-
+        entries_count = len(source_site.entries)
         parsed_entries = [
-            self._parse_entry(entry=entry, parsed_site=parsed_site, entry_reverse_index=(entries_count - index))
+            self._parse_entry(entry=entry, parsed_site=parsed_site, entry_reverse_index=(entries_count - index - 1))
             for index, entry in enumerate(source_site.entries)
         ]
 
         if parsed_entries:
+            parsed_entries = self._skip_entries(parsed_entries)
             parsed_entries = self._filter_entries(parsed_entries)
 
-            # reorder by most recent first (seen inverse order)
-            parsed_entries = sorted(parsed_entries, key=lambda s: (s.published), reverse=True)
-            # and cut to a reasonable limit (seen also feeds with full dumps maybe? of content)
-            parsed_entries = parsed_entries[:12]
-
-            # correct site last update time with latest entry (some sites report incorrectly or not even have)
-            parsed_site.last_updated = parsed_entries[0].published
-
-        Log.info("> Fetched: {title} ({last_updated})".format(title=title, last_updated=parsed_site.last_updated))
+        Log.info("> Fetched: {title}".format(title=title))
 
         return {self.KEY_SITE: parsed_site, self.KEY_ENTRIES: parsed_entries}
 
-    def _filter_entries(self, entries: List[ParsedFeedItem]) -> List[ParsedFeedItem]:
+    def _skip_entries(self, entries: List[ParsedFeedItem]) -> List[ParsedFeedItem]:
         return [
             entry
             for entry in entries
             if not any([True for title in self.settings.skip_filters if title in entry.title])
         ]
 
-    # from feedparser source
-    # https://github.com/kurtmckee/feedparser/blob/bae53018cd99520e2be1b96e7d51bd5799b02ac9/feedparser/http.py#L95
-    @staticmethod
-    def _format_if_modified_header(modified: Any) -> Optional[str]:
-        if isinstance(modified, datetime):
-            modified = modified.utctimetuple()
-        if modified:
-            short_weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-            months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-            return "%s, %02d %s %04d %02d:%02d:%02d GMT" % (
-                short_weekdays[modified[6]],
-                modified[2],
-                months[modified[1] - 1],
-                modified[0],
-                modified[3],
-                modified[4],
-                modified[5],
-            )
-        else:
-            return None
+    def _filter_entries(self, entries: List[ParsedFeedItem]) -> List[ParsedFeedItem]:
+        # reorder by most recent first (seen inverse order)
+        entries = sorted(entries, key=lambda s: (s.published), reverse=True)
+        # cut to a reasonable limit (seen also feeds with full dumps of content)
+        entries = entries[: self.settings.num_entries_per_feed]
+
+        if not self.settings.entry_max_age_months:
+            return entries
+
+        min_post_datetime = datetime.now() - timedelta(days=self.settings.entry_max_age_months * 30)
+
+        return [entry for entry in entries if entry.published >= min_post_datetime]
 
     @staticmethod
     def _log_and_error_if_proceeds(url: str, title: Optional[str], source_site: Any, response_status_code: int) -> None:
@@ -181,21 +166,11 @@ class Parser:
 
     @classmethod
     def _parse_site(cls, feed: Optional[Any], provided_title: Optional[str], category: Optional[str]) -> ParsedFeedSite:
-        if not feed:
-            return ParsedFeedSite(
-                title=cls._sanitize_site_title(feed=None, provided_title=provided_title),
-                category=category,
-                link=None,
-                last_updated=None,
-            )
-        else:
-            return ParsedFeedSite(
-                title=cls._sanitize_site_title(feed=feed, provided_title=provided_title),
-                category=category,
-                link=feed.link,
-                # field set later, unreliable from main feed
-                last_updated=None,
-            )
+        return ParsedFeedSite(
+            title=cls._sanitize_site_title(feed=feed, provided_title=provided_title),
+            category=category,
+            link=feed.link if feed else None,
+        )
 
     @classmethod
     def _parse_entry(cls, entry: Any, parsed_site: ParsedFeedSite, entry_reverse_index: int) -> ParsedFeedItem:
@@ -223,6 +198,10 @@ class Parser:
 
         published = cls._published_field_from(entry=entry, entry_reverse_index=entry_reverse_index)
 
+        content = re.sub(r"<script>.*?<\/script>", "", content, count=0, flags=re.I | re.S)
+        content = re.sub(r"<img (.*?) />", r'<img loading="lazy" \1 />', content, count=0, flags=re.I | re.S)
+        content = re.sub(r"<a (.*?)>", r'<a target="_blank" \1>', content, count=0, flags=re.I | re.S)
+
         return ParsedFeedItem(
             title=entry.title, link=entry.link, published=published, content=content, parent=parsed_site
         )
@@ -234,6 +213,7 @@ class Parser:
         elif "updated" in entry.keys():
             published = entry.updated_parsed if "updated_parsed" in entry.keys() else entry.updated
         else:
+            # TODO: check this will work when building indexes
             # fake some time to avoid collisions when generating files
             published = time.gmtime(entry_reverse_index * 60)
 

@@ -37,11 +37,11 @@ Without Docker:
 python3 run.py feeds subscriptions.xml
 ```
 
-Root `index.html` with lists of sites will be placed at `feeds/index.html` once finished fetching.
+An `index.html` file will be placed at `feeds/index.html` once finished fetching. That's your "reader" entry point.
 
-Also, a `settings.json` file will be generated. Inside it, you can add urls to the skip urls setting (e.g. if a feed is not working with PBRR). It's a list of strings, you can manually add new entries, for example `"https://site-to-skip.test"`.
+Also, a `settings-v2.json` file will be generated. Inside it, you can add urls to the skip urls setting (e.g. if a feed is not working with PBRR). It's a list of strings, you can manually add new entries, for example `"https://site-to-skip.test"`.
 
-Another "internal hack" you can do inside the settings file is add new entries under the `category_emoji_icons` block, for example: "`"category_emoji_icons": {"id-NewsGames": "🎮"}`" and it will render the emoji (really a prefix) before the corresponding category title.
+Another "internal hack" you can do inside the settings file is add new entries under the `category_emoji_icons` block, for example: "`"category_emoji_icons": {"News - Games": "🎮"}`" and it will render the emoji after the site if its category matches.
 
 ## Development
 
@@ -52,9 +52,9 @@ python3 run.py feeds subscriptions.xml
 
 Uses:
 - [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/), because makes parsing HTML and XML way more pleasant
-- [Bootstrap 3](https://getbootstrap.com/docs/3.4/), because my CSS skills equal to `null`
+- [Milligram](https://milligram.io/), because my CSS skills equal to `null` and I wanted something minimalistic
+- [Preact](https://preactjs.com/), because I wanted all Javascript to be client-side, but at the same time wanted to begin practising with React
 - [feedparser](https://feedparser.readthedocs.io) for easier handling of feeds, and yet, they keep causing headaches
-- [Unpoly](https://unpoly.com/) for AJAX, because you don't always need React
 
 To be able to perform AJAX calls in local, with Firefox you need to allow CORS with local `file://` urls: type `about:config` and set `privacy.file_unique_origin` to `false` (remember to change it back to `true` when finished!).
 

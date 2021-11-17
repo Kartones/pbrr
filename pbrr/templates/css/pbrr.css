@@ -1,80 +1,72 @@
-body {
-    font-size: 16px;
+.accordion .post-container .post-content {
+  width: 100%;
+  color: #262626;
+  -webkit-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+  opacity: 0;
+  height: auto;
+  max-height: 0;
+  overflow: hidden;
 }
 
-.list-group-item {
-    padding: 5px 10px;
+.accordion .post-container.active .post-content {
+  opacity: 1;
+  height: auto;
+  max-height: initial;
+
+  border: 0.1rem solid #ddd;
+  border-radius: .4rem;
+
+  padding: 6px;
+  margin-bottom: 6px;
 }
 
-.list-group-item a {
-    color: #555;
+.accordion {
+  margin: 6px;
 }
 
-.action-mark-all-read {
-    float: right;
-    display: none;
+.accordion .post-button {
+  cursor: pointer;
 }
 
-.list-group-item:hover + .action-mark-all-read, .list-group-item:hover a + .action-mark-all-read {
-    display: block;
+.accordion span.badge {
+  background-color: #777;
+  border: 0.1rem solid #777;
+  border-radius: .4rem;
+  color: #fff;
+  display: inline-block;
+  font-size: 1.1rem;
+  font-weight: 700;
+  height: 2rem;
+  letter-spacing: .1rem;
+  line-height: 2rem;
+  padding: 0 0.5rem;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: auto;
 }
 
-.action-mark-all-read:hover {
-    text-decoration: none;
+.accordion .post-button a {
+  font-size: 1.5em;
+  vertical-align: middle;
+  margin-left: 6px;
 }
 
-div.row {
-    margin-right: 0;
+.button-black {
+  background-color: black;
+  border-color: black;
 }
 
-img {
-    max-width: 1500px;
+.button-black.button-outline {
+  background-color: transparent;
+  color: black;
 }
 
-div.panel-body a {
-    text-decoration: underline;
+a {
+  color: #337ab7;
 }
 
-button.category {
-    display: block;
-    margin: 6px 6px 0 6px;
-    border-width: 3px;
-}
-
-#feed-content {
-    position: -webkit-sticky;
-    position:sticky;
-    top: 6px;
-}
-
-#navigation-sidebar {
-    position: -webkit-sticky;
-    position: sticky;
-    top: 0;
-}
-
-@media (prefers-color-scheme:dark) {
-    body {
-        color: #DCD8D9;
-        background-color: #2A2A2E;
-    }
-
-    a {
-        color: #DCD8D9;
-    }
-
-    img {
-        filter: grayscale(30%);
-        background-color: #EEE;
-    }
-
-    div.panel-default {
-        border-color: #4C4C4E;
-    }
-
-    button.btn, a.list-group-item, .panel-default > .panel-heading, div.panel-body {
-        color: #DCD8D9;
-        background-color: #2A2A2E;
-        border-color: #4C4C4E;
-    }
+pre {
+  border-left: 0.3rem solid #337ab7;
 }
