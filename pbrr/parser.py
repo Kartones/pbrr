@@ -106,7 +106,7 @@ class Parser:
         return [
             entry
             for entry in entries
-            if not any([True for title in self.settings.skip_filters if title in entry.title])
+            if not any([True for title in self.settings.skip_filters if title.upper() in entry.title.upper()])
         ]
 
     def _filter_entries(self, entries: List[ParsedFeedItem]) -> List[ParsedFeedItem]:
