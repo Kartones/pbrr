@@ -9,7 +9,7 @@ SETTINGS_FILENAME = "settings-v2.json"
 KEY_SKIP_URLS = "skip_urls"
 # map of category id -> emoji prefix. to be manually added editing the settings json
 KEY_EMOJI_ICONS = "category_emoji_icons"
-# list of case-sensitive substrings that, if match at an entry's title, the entry will be skipped
+# list of case-insensitive substrings that, if match at an entry's title, the entry will be skipped
 KEY_SKIP_FILTERS = "skip_filters"
 # Number of (maximum) entries per feed to keep
 KEY_ENTRIES_PER_FEED = "num_entries_per_feed"

@@ -48,9 +48,7 @@ class Writer:
             entries,
         ) in self.enqueued_data:
             sites_list.append("{filename}.json".format(filename=site.title_for_filename))
-            if entries:
-                # TODO: read existing data if present, load all, cut to X most recent items and then write
-                self._save_site_data(site, entries)
+            self._save_site_data(site, entries)
 
         self._save_sites_list(sites_list)
 
