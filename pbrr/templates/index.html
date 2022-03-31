@@ -18,11 +18,7 @@
   </div>
 
   <script type="module">
-    // import { h, Component, render } from 'https://unpkg.com/preact?module';
-    // import htm from 'https://unpkg.com/htm?module';
     import { h, html, Component, render } from 'https://unpkg.com/htm/preact/index.mjs?module'
-
-    // const html = htm.bind(h);
 
     const CategoryIcon = (props) => {
       const { category, categoryIcon } = props;
@@ -53,7 +49,7 @@
         return (
           html`<div className="post-container" key=${index}>
             <h5 className="post-button button button-outline button-black">
-              ${row.title} | ${row.site} <${CategoryIcon} category=${row.site_category} categoryIcon=${row.site_category_icon} /> <span className="badge">${row.formattedDate}</span> <a href=${row.url} target="blank">🌐</a>
+              ${row.title} | ${row.site} <${CategoryIcon} category=${row.site_category} categoryIcon=${row.site_category_icon} /> <span className="badge">${row.formattedDate}</span> <a href=${row.url} target="blank" rel="noreferrer noopener">🌐</a>
             </h5>
             ${contentDiv}
           </div>`

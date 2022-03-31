@@ -1,3 +1,7 @@
+body {
+  font-size: 1.8em;
+}
+
 .accordion .post-container .post-content {
   width: 100%;
   color: #262626;
@@ -69,4 +73,11 @@ a {
 
 pre {
   border-left: 0.3rem solid #337ab7;
+}
+
+h5 {
+  margin-bottom: 2px !important;
+  margin-top: 2px !important;
+  padding-left: 6px !important;
+  padding-right: 6px !important;
 }
