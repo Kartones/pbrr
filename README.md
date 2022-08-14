@@ -16,8 +16,6 @@ Here's how it looks:
 
 If a feed/site has no news (returns an http 304), it will keep the existing list of posts.
 
-It uses `localStorage` to keep track of your last visits (per site post).
-
 ## Setup
 
 Just need Docker, but to setup without containers:
