@@ -70,6 +70,7 @@ body {
 a {
   color: #337ab7;
 }
+div.post-content a{font-weight:bold;text-decoration:underline}
 
 pre {
   border-left: 0.3rem solid #337ab7;
@@ -80,4 +81,16 @@ h5 {
   margin-top: 2px !important;
   padding-left: 6px !important;
   padding-right: 6px !important;
+}
+
+button.toggle {
+  background-color:#1d1d1d;
+  border:0 transparent;
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  right: 18px;
+  top: 6px;
+  margin: 0;
+  padding: initial;
 }

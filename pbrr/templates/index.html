@@ -10,10 +10,21 @@
   <link rel="stylesheet" href="css/normalize.css">
   <link rel="stylesheet" href="css/milligram.min.css">
   <link rel="stylesheet" href="css/pbrr.css" />
+  <style id="dark-mode" media="none">
+  body{color:#e4e4e4;background-color:#1d1d1d}
+  img{filter:grayscale(30%);background-color:#eee}
+  div.post-content a{font-weight:bold;text-decoration:underline}
+  .button-black{border-color:#e4e4e4}
+  a,.accordion .post-container .post-content,.button-black.button-outline{color:#e4e4e4}
+  button.toggle{background-color:transparent}
+  </style>
 
   <script src="js/pbrr.js"></script>
 </head>
 <body>
+  <div class="nav">
+    <button class="toggle" onclick="toggleTheme()" title="Switch between dark and light mode" aria-label="Switch between dark and light mode"></button>
+  </div>
   <div id="root">
   </div>
 
@@ -100,6 +111,22 @@
     render(html`<${App} />`, document.getElementById('root'));
 
   </script>
+  <script>
+    const light='<svg width="24" height="24"><path fill="#fff" d="M12 9a3.01 3.01 0 0 1 3 3 3.01 3.01 0 0 1-3 3 3.01 3.01 0 0 1-3-3 3.01 3.01 0 0 1 3-3m0-2c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5h0zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>';
+    const dark='<svg width="24" height="24"><path fill="#fff" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg>';
+    (function(){
+    let m="none";
+    const n=document.getElementById("dark-mode");
+    const e=document.querySelector("div.nav button");
+    if(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches){m="all";}
+    if(localStorage.getItem("dark-mode") === "1"){m="all";}else if(localStorage.getItem("dark-mode") === "0"){m="none";}
+    n.media=m;
+    if(m === "all"){e.innerHTML=light;}else{e.innerHTML=dark;}})();
+    function toggleTheme(){
+    const n=document.getElementById("dark-mode");
+    const e=document.querySelector("div.nav button");
+    if(n.media === "all"){n.media="none";localStorage.setItem("dark-mode","0");e.innerHTML=dark;}else{n.media="all";localStorage.setItem("dark-mode","1");e.innerHTML=light;}}
+    </script>
 
 </body>
 </html>
