@@ -88,9 +88,21 @@ button.toggle {
   border:0 transparent;
   width: 24px;
   height: 24px;
-  position: absolute;
+  position: fixed;
   right: 18px;
   top: 6px;
   margin: 0;
   padding: initial;
+}
+
+a.button {
+  background-color:#1d1d1d;
+  border:0 transparent;
+  width: 24px;
+  height: 24px;
+  position: fixed;
+  right: 48px;
+  top: 6px;
+  padding: initial;
+  font-size: 24px;
 }
