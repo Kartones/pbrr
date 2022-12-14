@@ -1,5 +1,5 @@
 beautifulsoup4==4.11.1
 colorama==0.4.6
 feedparser==6.0.10
-lxml==4.9.1
+lxml==4.9.2
 requests==2.28.1
