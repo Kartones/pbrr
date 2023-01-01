@@ -200,6 +200,8 @@ class Parser:
 
         content = re.sub(r"<script>.*?<\/script>", "", content, count=0, flags=re.I | re.S)
         content = re.sub(r"<img (.*?) />", r'<img loading="lazy" \1 />', content, count=0, flags=re.I | re.S)
+        # break content's CSS that would otherwise render wrongly
+        content = re.sub(r' class="button"', "", content, count=0, flags=re.I | re.S)
         content = re.sub(r"<a (.*?)>", r'<a target="_blank" \1>', content, count=0, flags=re.I | re.S)
 
         return ParsedFeedItem(
