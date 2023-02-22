@@ -198,14 +198,28 @@ class Parser:
 
         published = cls._published_field_from(entry=entry, entry_reverse_index=entry_reverse_index)
 
+        site_url = "https://{site}".format(
+            site=parsed_site.link.replace("https://", "").replace("http://", "").split("/")[0]
+        )
+
+        # Some blogs return relative urls as the entry link (and some report site base url as non-https)
+        entry_link = entry.link
+        if entry_link[:1] == "/":
+            entry_link = "{site}{entry}".format(site=site_url, entry=entry.link)
+
         content = re.sub(r"<script>.*?<\/script>", "", content, count=0, flags=re.I | re.S)
         content = re.sub(r"<img (.*?) />", r'<img loading="lazy" \1 />', content, count=0, flags=re.I | re.S)
         # break content's CSS that would otherwise render wrongly
         content = re.sub(r' class="button"', "", content, count=0, flags=re.I | re.S)
         content = re.sub(r"<a (.*?)>", r'<a target="_blank" \1>', content, count=0, flags=re.I | re.S)
 
+        # fix relative urls inside posts (e.g. Github private RSS)
+        content = re.sub(
+            r" href=\"(/.*?)\"", r' href="{site}\1"'.format(site=site_url), content, count=0, flags=re.I | re.S
+        )
+
         return ParsedFeedItem(
-            title=entry.title, link=entry.link, published=published, content=content, parent=parsed_site
+            title=entry.title, link=entry_link, published=published, content=content, parent=parsed_site
         )
 
     @staticmethod

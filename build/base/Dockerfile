@@ -19,7 +19,7 @@ RUN getent passwd $uid || useradd -m -u $uid -g $gid pbrr
 RUN chown -R $uid:$gid /usr/local
 
 # To upgrade pip below
-RUN apt-get update
+RUN apt-get clean && apt-get -y update
 
 USER $uid
 

@@ -83,6 +83,10 @@ h5 {
   padding-right: 6px !important;
 }
 
+.button {
+  font-size: 1.25rem;
+}
+
 button.toggle {
   background-color:#1d1d1d;
   border:0 transparent;
