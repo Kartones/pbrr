@@ -88,7 +88,7 @@ class Writer:
         return os.path.join(self.settings.base_output_path, "{filename}.json".format(filename=site.title_for_filename))
 
     def _copy_template_required_files(self) -> None:
-        for folder in ["css", "js"]:
+        for folder in ["css", "js", "fonts"]:
             path = os.path.join(self.settings.base_output_path, folder)
             copy_tree(os.path.join(BASE_FOLDER, TEMPLATES_FOLDER, folder), path)
         for file in ["index.html"]:
