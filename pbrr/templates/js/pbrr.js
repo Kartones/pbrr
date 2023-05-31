@@ -10,12 +10,17 @@ function initAccordion(element) {
 }
 
 function read(setStateFunction) {
+  const timestampMark = Date.now();
   let allFeeds = [];
 
-  fetch("sites.json")
+  fetch(`sites.json?t=${timestampMark}`)
     .then((response) => response.json())
     .then((sitesList) =>
-      Promise.all(sitesList.sites.map((filename) => fetch(filename)))
+      Promise.all(
+        sitesList.sites.map((filename) =>
+          fetch(`${filename}?t=${timestampMark}`)
+        )
+      )
     )
     .then((responses) =>
       Promise.all(responses.map((response) => response.json()))
