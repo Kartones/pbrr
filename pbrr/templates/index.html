@@ -50,6 +50,14 @@ button.toggle{background-color:transparent}
       }
     }
 
+    const EmptyPostsList = () => {
+      return (
+        html`<div className="container">
+          <p className="loader">Loading...</p>
+        </div>`
+      );
+    }
+
     const PostsList = (props) => {
       const { postsData } = props;
 
@@ -99,11 +107,17 @@ button.toggle{background-color:transparent}
       render() {
         const { posts } = this.state;
 
-        return (
-          html`<div className="container">
-            <${PostsList} postsData=${posts} />
-          </div>`
-        );
+        if (posts.length === 0) {
+          return (
+            html`<${EmptyPostsList} />`
+          );
+        } else {
+          return (
+            html`<div className="container">
+              <${PostsList} postsData=${posts} />
+            </div>`
+          );
+        }
       }
     }
 

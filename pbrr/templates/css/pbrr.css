@@ -110,3 +110,9 @@ a.button {
   padding: initial;
   font-size: 24px;
 }
+
+p.loader {
+  text-align: center;
+  margin-top: 36px;
+  font-weight: bold;
+}
