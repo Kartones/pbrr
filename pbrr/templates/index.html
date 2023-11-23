@@ -66,7 +66,7 @@ button.toggle{background-color:transparent}
 
         return (
           html`<div className="post-container" key=${index}>
-            <h5 className="post-button button button-outline button-black">
+            <h5 className="post-button button button-outline button-black" style="background-color:${colorForSite(row.site)}${COLOR_OPACITY}">
               ${row.title} | ${row.site} <${CategoryIcon} category=${row.site_category} categoryIcon=${row.site_category_icon} /> <span className="badge">${row.formattedDate}</span> <a href=${row.url} target="blank" rel="noreferrer noopener">🌐</a>
             </h5>
             ${contentDiv}
@@ -100,7 +100,7 @@ button.toggle{background-color:transparent}
           posts: postsRead
         });
 
-        // Note: this would add it multiple times, but now is not a valid scenario
+        // Note: this would add it multiple times, but now is not possible
         initAccordion('.accordion');
       }
 

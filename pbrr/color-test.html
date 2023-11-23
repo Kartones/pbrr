@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Color Tester</title>
+<style>
+  #root {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-gap: 10px;
+    padding: 10px;
+  }
+</style>
+<script src="templates/js/pbrr.js"></script>
+</head>
+<body>
+<div id="root">
+</div>
+
+<div>
+  <input type="text" id="site-tester" placeholder="input site name and press [ENTER]" value="">
+  <div id="site-tester-color" style="width:100px; height:100px;"></div>
+  <span id="site-tester-color-position"></span>
+</div>
+
+<script>
+
+  // on enter key press in `site-tester`, call colorForSite() and apply the color to `site-tester-color`
+  document.getElementById('site-tester').addEventListener('keyup', function(event) {
+    if (event.keyCode === 13) {
+      event.preventDefault();
+
+      const site = document.getElementById('site-tester').value;
+
+      let color = `${colorForSite(site)}${COLOR_OPACITY}`;
+      document.getElementById('site-tester-color').style.backgroundColor = color;
+      document.getElementById('site-tester-color-position').innerText = `position in COLORS: ${calculateColor(site)}`;
+    }
+  });
+
+  COLORS.forEach(element => {
+    document.getElementById('root').innerHTML += `<div style="background-color:${element}${COLOR_OPACITY}; width:100px; height:100px;">${element}</div>`;
+  });
+</script>
+</body>
+</html>

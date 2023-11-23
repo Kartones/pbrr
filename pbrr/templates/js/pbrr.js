@@ -1,5 +1,91 @@
+const COLORS = [
+  "#0066cc",
+  "#f887ff",
+  "#66cc33",
+  "#990099",
+  "#ff9900",
+  "#3366cc",
+  "#cc3300",
+  "#339966",
+  "#cc0099",
+  "#ff6600",
+  "#6699cc",
+  "#cc0066",
+  "#009999",
+  "#ff3300",
+  "#336699",
+  "#cc9900",
+  "#006699",
+  "#ff3366",
+  "#339999",
+  "#ffcc00",
+  "#003366",
+  "#cc6633",
+  "#99cc00",
+  "#ffcc33",
+  "#006666",
+  "#cc6600",
+  "#66cc00",
+  "#ff9933",
+  "#006633",
+  "#cc9966",
+  "#339933",
+  "#ccff00",
+  "#003366",
+  "#ff6633",
+  "#336600",
+  "#ccff33",
+  "#003300",
+  "#ffcc66",
+  "#3F2476",
+  "#ef4b92",
+  "#003333",
+  "#ff6666",
+  "#339900",
+  "#ccff66",
+  "#003322",
+  "#ff9999",
+  "#66cc66",
+  "#ff99cc",
+  "#003311",
+  "#cc6666",
+  "#33cc66",
+  "#dc0000",
+  "#003300",
+  "#ff6666",
+  "#66cc99",
+  "#cc99ff",
+  "#003322",
+  "#ff6699",
+  "#339966",
+  "#cc66cc",
+];
+
+// Hex-based
+const COLOR_OPACITY = 40;
+
+let siteColorMap = {};
+
+function calculateColor(site) {
+  site = site.toLowerCase();
+
+  const index = site
+    .split("")
+    .map((char) => char.charCodeAt(0))
+    .reduce((acc, value) => acc + value, 0);
+  return index % COLORS.length;
+}
+
+function colorForSite(site) {
+  site = site.toLowerCase();
+
+  if (!siteColorMap[site]) {
+    siteColorMap[site] = calculateColor(site);
+  }
+  return COLORS[siteColorMap[site]];
+}
+
 function initAccordion(element) {
-  // TODO: add parent item to not set so high
   document.addEventListener("click", function (e) {
     if (!e.target.matches(element + " .post-button")) {
       return;
