@@ -1,5 +1,4 @@
 function initAccordion(element) {
-  // TODO: add parent item to not set so high
   document.addEventListener("click", function (e) {
     if (!e.target.matches(element + " .post-button")) {
       return;
