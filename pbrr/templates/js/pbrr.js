@@ -26,6 +26,18 @@ function read(setStateFunction) {
     )
     .then((sites) => sites.map((site) => _parseSite(site, allFeeds)))
     .then(() => _onDataReady(allFeeds, setStateFunction));
+
+  fetch(`last-updated.json?t=${timestampMark}`)
+    .then((response) => response.json())
+    .then((lastUpdated) => {
+      const lastUpdatedElement = document.getElementById("last-updated");
+      if (lastUpdatedElement) {
+        lastUpdatedElement.innerHTML = _formattedDate(lastUpdated.timestamp);
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching last-updated.json", error);
+    });
 }
 
 function _parseSite(jsonData, allFeeds) {

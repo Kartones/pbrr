@@ -1,7 +1,7 @@
 import json
 import os
-from distutils.dir_util import copy_tree
-from distutils.file_util import copy_file
+import shutil
+from datetime import datetime
 from typing import List, Tuple
 
 from pbrr.log import Log
@@ -15,6 +15,7 @@ TEMPLATES_FOLDER = "templates"
 NO_CATEGORY_TITLE = "Uncategorized"
 
 SITES_LIST_FILE = "sites.json"
+LAST_UPDATED_FILE = "last-updated.json"
 
 KEY_SITES = "sites"
 KEY_DATETIME = "date"
@@ -31,7 +32,7 @@ MAIN_TEMPLATE = "index"
 class Writer:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
-        self.enqueued_data = []  # type: List[Tuple[ParsedFeedSite, List[ParsedFeedItem]]]
+        self.enqueued_data: List[Tuple[ParsedFeedSite, List[ParsedFeedItem]]] = []
 
     def enqueue(self, site: ParsedFeedSite, entries: List[ParsedFeedItem]) -> None:
         self.enqueued_data.append((site, entries))
@@ -47,17 +48,27 @@ class Writer:
             site,
             entries,
         ) in self.enqueued_data:
-            sites_list.append("{filename}.json".format(filename=site.title_for_filename))
+            sites_list.append(f"{site.title_for_filename}.json")
             self._save_site_data(site, entries)
 
         self._save_sites_list(sites_list)
+
+        self._save_last_updated()
+
+    def _save_last_updated(self) -> None:
+        data = {
+            "timestamp": datetime.now().timestamp(),
+        }
+
+        with open(os.path.join(self.settings.base_output_path, LAST_UPDATED_FILE), "w", encoding="utf8") as file_handle:
+            json.dump(data, file_handle, indent=2)
 
     def _save_sites_list(self, sites_list: List[str]) -> None:
         data = {
             KEY_SITES: sites_list,
         }
 
-        with open(os.path.join(self.settings.base_output_path, SITES_LIST_FILE), "w") as file_handle:
+        with open(os.path.join(self.settings.base_output_path, SITES_LIST_FILE), "w", encoding="utf8") as file_handle:
             json.dump(data, file_handle, indent=2)
 
     def _save_site_data(self, site: ParsedFeedSite, entries: List[ParsedFeedItem]) -> None:
@@ -76,22 +87,22 @@ class Writer:
                 for entry in entries
             },
         }
-        with open(site_filepath, "w") as file_handle:
+        with open(site_filepath, "w", encoding="utf8") as file_handle:
             json.dump(data, file_handle, indent=2)
-        Log.info("> Written: {title} ({count} entries)".format(title=site.title, count=len(entries)))
+        Log.info(f"> Written: {site.title} ({len(entries)} entries)")
 
     def _ensure_base_path(self) -> None:
         if not os.path.exists(self.settings.base_output_path):
             os.mkdir(self.settings.base_output_path)
 
     def _site_data_path(self, site: ParsedFeedSite) -> str:
-        return os.path.join(self.settings.base_output_path, "{filename}.json".format(filename=site.title_for_filename))
+        return os.path.join(self.settings.base_output_path, f"{site.title_for_filename}.json")
 
     def _copy_template_required_files(self) -> None:
         for folder in ["css", "js", "fonts"]:
             path = os.path.join(self.settings.base_output_path, folder)
-            copy_tree(os.path.join(BASE_FOLDER, TEMPLATES_FOLDER, folder), path)
+            shutil.copytree(os.path.join(BASE_FOLDER, TEMPLATES_FOLDER, folder), path, dirs_exist_ok=True)
         for file in ["index.html"]:
-            copy_file(
+            shutil.copy2(
                 os.path.join(BASE_FOLDER, TEMPLATES_FOLDER, file), os.path.join(self.settings.base_output_path, file)
             )

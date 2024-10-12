@@ -20,20 +20,20 @@ KEY_ENTRY_MAX_AGE_MONTHS = "entry_max_age_months"
 class Settings:
     def __init__(self, base_output_path: str) -> None:
         self.base_output_path = base_output_path
-        self.skip_urls = []  # type: List[str]
-        self.category_icons = {}  # type: Dict[str, str]
-        self.skip_filters = []  # type: List[str]
+        self.skip_urls: List[str] = []
+        self.category_icons: Dict[str, str] = {}
+        self.skip_filters: List[str] = []
         self.num_entries_per_feed = 10
         self.entry_max_age_months = None
 
     def load(self) -> None:
         file_path = os.path.join(self.base_output_path, SETTINGS_FILENAME)
         if os.path.exists(file_path):
-            with open(file_path, "r") as file_handle:
+            with open(file_path, "r", encoding="utf8") as file_handle:
                 data = json.load(file_handle)
 
             self.skip_urls = data[KEY_SKIP_URLS]
-            Log.info("> Skip urls list: {}".format(self.skip_urls))
+            Log.info(f"> Skip urls list: {self.skip_urls}")
             self.category_icons = data.get(KEY_EMOJI_ICONS, {})
             self.skip_filters = data.get(KEY_SKIP_FILTERS, [])
             self.num_entries_per_feed = data.get(KEY_ENTRIES_PER_FEED, 10)
@@ -43,7 +43,7 @@ class Settings:
         file_path = os.path.join(self.base_output_path, SETTINGS_FILENAME)
 
         if not os.path.exists(self.base_output_path):
-            Log.error_and_exit("Output path '{}' not found".format(self.base_output_path))
+            Log.error_and_exit(f"Output path '{self.base_output_path}' not found")
 
         data = {
             KEY_SKIP_URLS: self.skip_urls,
@@ -53,5 +53,5 @@ class Settings:
             KEY_ENTRY_MAX_AGE_MONTHS: self.entry_max_age_months,
         }
 
-        with open(file_path, "w") as file_handle:
+        with open(file_path, "w", encoding="utf8") as file_handle:
             json.dump(data, file_handle, indent=None)
