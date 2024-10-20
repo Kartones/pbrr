@@ -120,5 +120,6 @@ p.loader {
 footer {
   font-size: 12px;
   color: #888;
+  margin-left: 6px;
   margin-top: 18px;
 }
