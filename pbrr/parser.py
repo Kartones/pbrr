@@ -14,6 +14,8 @@ from pbrr.parsed_feed_site import ParsedFeedSite
 from pbrr.settings import Settings
 
 
+ONE_MONTH_IN_SECONDS = 60 * 60 * 24 * 30
+
 class Parser:
 
     KEY_SITE = "site"
@@ -90,7 +92,7 @@ class Parser:
 
         entries_count = len(source_site.entries)
         parsed_entries = [
-            self._parse_entry(entry=entry, parsed_site=parsed_site, entry_reverse_index=(entries_count - index - 1))
+            self._parse_entry(entry=entry, parsed_site=parsed_site, entry_index=index, entry_reverse_index=(entries_count - index - 1))
             for index, entry in enumerate(source_site.entries)
         ]
 
@@ -173,7 +175,9 @@ class Parser:
         )
 
     @classmethod
-    def _parse_entry(cls, entry: Any, parsed_site: ParsedFeedSite, entry_reverse_index: int) -> ParsedFeedItem:
+    def _parse_entry(
+        cls, entry: Any, parsed_site: ParsedFeedSite, entry_index: int, entry_reverse_index: int
+    ) -> ParsedFeedItem:
         content = ""
         content_key = None
         is_array = False
@@ -196,7 +200,9 @@ class Parser:
             else:
                 content = entry[content_key].value
 
-        published = cls._published_field_from(entry=entry, entry_reverse_index=entry_reverse_index)
+        published = cls._published_field_from(
+            entry=entry, entry_index=entry_index, entry_reverse_index=entry_reverse_index
+        )
 
         site_url = "https://{site}".format(
             site=parsed_site.link.replace("https://", "").replace("http://", "").split("/")[0]
@@ -223,15 +229,17 @@ class Parser:
         )
 
     @staticmethod
-    def _published_field_from(entry: Any, entry_reverse_index: int) -> datetime:
+    def _published_field_from(entry: Any, entry_index: int, entry_reverse_index: int) -> datetime:
+        published = None
+
         if "published" in entry.keys():
             published = entry.published_parsed if "published_parsed" in entry.keys() else entry.published
         elif "updated" in entry.keys():
             published = entry.updated_parsed if "updated_parsed" in entry.keys() else entry.updated
-        else:
-            # TODO: check this will work when building indexes
-            # fake some time to avoid collisions when generating files
-            published = time.gmtime(entry_reverse_index * 60)
+
+        if not published:
+            # fake a post time to avoid collisions when generating files
+            published = time.gmtime(time.mktime(time.gmtime()) - (entry_index * ONE_MONTH_IN_SECONDS))
 
         published_datetime = datetime.fromtimestamp(time.mktime(published))
         # use seconds as a way to differentiate each entry, so if two are published at the same time, don't collide
