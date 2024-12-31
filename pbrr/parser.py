@@ -240,6 +240,8 @@ class Parser:
         if not published:
             # fake a post time to avoid collisions when generating files
             published = time.gmtime(time.mktime(time.gmtime()) - (entry_index * ONE_MONTH_IN_SECONDS))
+            # change the time-tuple day to the 1st of the month (so they don't always appear as recent/new)
+            published = published[:2] + (1,) + published[3:]
 
         published_datetime = datetime.fromtimestamp(time.mktime(published))
         # use seconds as a way to differentiate each entry, so if two are published at the same time, don't collide
