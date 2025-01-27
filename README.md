@@ -33,7 +33,11 @@ Without Docker:
 python3 run.py feeds subscriptions.xml
 ```
 
-An `index.html` file will be placed at `feeds/index.html` once finished fetching. That's your "reader" entry point.
+`subscriptions.xml` file is your OPML (Outline Processor Markup Language) is an XML format that bundles RSS feeds into a single text file and you can generate one online using your feeds. PBRR parser expects `outline`, `xmlUrl`, `type=rss` tags to be present in this file. Create a `feeds` directory and place `subscriptions.xml` file in it before running `python3 run.py feeds subscription.xml`,
+
+An `index.html` file will be placed at `feeds/index.html` once finished fetching. That's your "reader" entry point. When you open `index.html` file directly, browser blocks the content because of CORS. You can render the page by running a local server instead. You can run one by running `python3 -m http.server 8000` or `npx serve`. 
+
+```
 
 Also, a `settings-v2.json` file will be generated. Inside it, you can add urls to the skip urls setting (e.g. if a feed is not working with PBRR). It's a list of strings, you can manually add new entries, for example `"https://site-to-skip.test"`.
 
