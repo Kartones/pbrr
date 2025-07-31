@@ -13,8 +13,8 @@ from pbrr.parsed_feed_item import ParsedFeedItem
 from pbrr.parsed_feed_site import ParsedFeedSite
 from pbrr.settings import Settings
 
-
 ONE_MONTH_IN_SECONDS = 60 * 60 * 24 * 30
+
 
 class Parser:
 
@@ -70,8 +70,9 @@ class Parser:
                 },
                 timeout=15,
             )
+            feed_response.encoding = "utf-8"
             source_site = feedparser.parse(feed_response.text)
-        except (Exception) as e:
+        except Exception as e:
             # else need to directly catch urllib errors
             if "Name or service not known" in str(e):
                 Log.warn_and_raise_error("{title} ({url}) skipped, error fetching url".format(title=title, url=url))
@@ -92,7 +93,9 @@ class Parser:
 
         entries_count = len(source_site.entries)
         parsed_entries = [
-            self._parse_entry(entry=entry, parsed_site=parsed_site, entry_index=index, entry_reverse_index=(entries_count - index - 1))
+            self._parse_entry(
+                entry=entry, parsed_site=parsed_site, entry_index=index, entry_reverse_index=(entries_count - index - 1)
+            )
             for index, entry in enumerate(source_site.entries)
         ]
 
