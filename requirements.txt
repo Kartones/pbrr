@@ -1,4 +1,4 @@
-beautifulsoup4==4.14.0
+beautifulsoup4==4.14.2
 colorama==0.4.6
 feedparser==6.0.12
 lxml==6.0.2
