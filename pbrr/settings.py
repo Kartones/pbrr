@@ -11,6 +11,8 @@ KEY_SKIP_URLS = "skip_urls"
 KEY_EMOJI_ICONS = "category_emoji_icons"
 # list of case-insensitive substrings that, if match at an entry's title, the entry will be skipped
 KEY_SKIP_FILTERS = "skip_filters"
+# list of case-insensitive substrings that, if match at an entry's content, the entry will be skipped
+KEY_SKIP_CONTENT_FILTERS = "skip_content_filters"
 # Number of (maximum) entries per feed to keep
 KEY_ENTRIES_PER_FEED = "num_entries_per_feed"
 # If an entry is older than this number of months, will get filtered out. `None` disables this feature
@@ -23,6 +25,7 @@ class Settings:
         self.skip_urls: List[str] = []
         self.category_icons: Dict[str, str] = {}
         self.skip_filters: List[str] = []
+        self.skip_content_filters: List[str] = []
         self.num_entries_per_feed = 10
         self.entry_max_age_months = None
 
@@ -36,22 +39,6 @@ class Settings:
             Log.info(f"> Skip urls list: {self.skip_urls}")
             self.category_icons = data.get(KEY_EMOJI_ICONS, {})
             self.skip_filters = data.get(KEY_SKIP_FILTERS, [])
+            self.skip_content_filters = data.get(KEY_SKIP_CONTENT_FILTERS, [])
             self.num_entries_per_feed = data.get(KEY_ENTRIES_PER_FEED, 10)
             self.entry_max_age_months = data.get(KEY_ENTRY_MAX_AGE_MONTHS, None)
-
-    def save(self) -> None:
-        file_path = os.path.join(self.base_output_path, SETTINGS_FILENAME)
-
-        if not os.path.exists(self.base_output_path):
-            Log.error_and_exit(f"Output path '{self.base_output_path}' not found")
-
-        data = {
-            KEY_SKIP_URLS: self.skip_urls,
-            KEY_EMOJI_ICONS: self.category_icons,
-            KEY_SKIP_FILTERS: self.skip_filters,
-            KEY_ENTRIES_PER_FEED: self.num_entries_per_feed,
-            KEY_ENTRY_MAX_AGE_MONTHS: self.entry_max_age_months,
-        }
-
-        with open(file_path, "w", encoding="utf8") as file_handle:
-            json.dump(data, file_handle, indent=None)

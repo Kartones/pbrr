@@ -60,10 +60,6 @@ To be able to perform AJAX calls in local, with Firefox you need to allow CORS w
 
 For the time being, no intention of adding tests to the project.
 
-## TODOs
-
-- run mypy on pre-commit if possible
-
 ## License
 
 See [LICENSE](LICENSE).

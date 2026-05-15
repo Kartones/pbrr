@@ -108,11 +108,19 @@ class Parser:
         return {self.KEY_SITE: parsed_site, self.KEY_ENTRIES: parsed_entries}
 
     def _skip_entries(self, entries: List[ParsedFeedItem]) -> List[ParsedFeedItem]:
-        return [
+        non_skipped_by_title_entries = [
             entry
             for entry in entries
             if not any([True for title in self.settings.skip_filters if title.upper() in entry.title.upper()])
         ]
+
+        non_skipped_by_content = [
+            entry
+            for entry in non_skipped_by_title_entries
+            if not any([True for content in self.settings.skip_content_filters if content in entry.content])
+        ]
+
+        return non_skipped_by_content
 
     def _filter_entries(self, entries: List[ParsedFeedItem]) -> List[ParsedFeedItem]:
         # reorder by most recent first (seen inverse order)

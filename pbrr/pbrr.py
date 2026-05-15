@@ -33,4 +33,3 @@ class PBRR:
             writer.enqueue(site, entries)
 
         writer.save_data()
-        settings.save()
